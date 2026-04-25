@@ -19,6 +19,7 @@ const githubServerEnvSchema = z.object({
 const locusServerEnvSchema = z.object({
   LOCUS_API_KEY: z.string().min(1),
   LOCUS_API_BASE_URL: z.string().url().default("https://beta-api.paywithlocus.com/api"),
+  LOCUS_WEBHOOK_SECRET: z.string().min(1).optional(),
 });
 
 export type SupabaseServerEnv = z.infer<typeof supabaseServerEnvSchema>;
@@ -67,6 +68,7 @@ export function getLocusServerEnv(): LocusServerEnv {
   cachedLocusServerEnv = locusServerEnvSchema.parse({
     LOCUS_API_KEY: process.env.LOCUS_API_KEY,
     LOCUS_API_BASE_URL: process.env.LOCUS_API_BASE_URL,
+    LOCUS_WEBHOOK_SECRET: process.env.LOCUS_WEBHOOK_SECRET,
   });
 
   return cachedLocusServerEnv;

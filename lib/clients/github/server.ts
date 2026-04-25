@@ -35,3 +35,16 @@ export function getGithubAppClient(): App {
 export function getGithubTokenClient(token: string): Octokit {
   return new Octokit({ auth: token });
 }
+
+export async function getGithubInstallationClient(installationId: number): Promise<Octokit> {
+  const app = getGithubAppClient();
+
+  return app.getInstallationOctokit(installationId);
+}
+
+export async function getGithubRepoInstallationId(owner: string, repo: string): Promise<number> {
+  const app = getGithubAppClient();
+  const response = await app.octokit.rest.apps.getRepoInstallation({ owner, repo });
+
+  return response.data.id;
+}
