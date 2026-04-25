@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { getLocusServerClient } from "@/lib/clients/locus/server";
 import { getSupabaseServiceClient } from "@/lib/clients/supabase/server";
-import { handleLocusFundingWebhook } from "@/lib/bounty/funding-flow";
+import { handleLocusFundingWebhook } from "@/lib/bounty/handlers";
 
 async function verifyLocusWebhook(request: NextRequest): Promise<boolean> {
   const payload = await request.text();

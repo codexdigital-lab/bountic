@@ -9,6 +9,13 @@ const FUND_COMMAND_REGEX = new RegExp(
   "i",
 );
 
+const APPROVE_COMMAND_REGEX = new RegExp(
+  `^${BOUNTY_COMMANDS.approve.replace("/", "\\/")}\\s*$`,
+  "i",
+);
+
+const ISSUE_REFERENCE_REGEX = /(?:fixes|closes|resolves)\s+#(\d+)/i;
+
 export function parseBountyFundCommand(body: string): ParsedBountyFundCommand | null {
   const match = FUND_COMMAND_REGEX.exec(body.trim());
 
@@ -23,4 +30,28 @@ export function parseBountyFundCommand(body: string): ParsedBountyFundCommand | 
   }
 
   return { amount };
+}
+
+export function parseApproveCommand(body: string): boolean {
+  return APPROVE_COMMAND_REGEX.test(body.trim());
+}
+
+export function extractIssueNumberFromPrBody(body: string | null): number | null {
+  if (!body) {
+    return null;
+  }
+
+  const match = ISSUE_REFERENCE_REGEX.exec(body);
+
+  if (!match) {
+    return null;
+  }
+
+  const issueNumber = Number.parseInt(match[1], 10);
+
+  if (!Number.isInteger(issueNumber)) {
+    return null;
+  }
+
+  return issueNumber;
 }

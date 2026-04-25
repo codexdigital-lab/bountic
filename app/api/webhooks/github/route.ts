@@ -1,17 +1,23 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { getGithubAppClient } from "@/lib/clients/github/server";
-import { handleGithubFundingCommand } from "@/lib/bounty/funding-flow";
+import {
+  handleGithubFundingCommand,
+  handlePrOpened,
+  handlePrClosed,
+  handlePrComment,
+} from "@/lib/bounty/handlers";
 
 export async function POST(request: NextRequest) {
   const app = getGithubAppClient();
 
   const signature = request.headers.get("x-hub-signature-256");
   const delivery = request.headers.get("x-github-delivery");
+  const eventName = request.headers.get("x-github-event");
 
-  if (!signature || !delivery) {
+  if (!signature || !delivery || !eventName) {
     return NextResponse.json(
-      { error: "missing-signature-or-delivery" },
+      { error: "missing-headers" },
       { status: 400 }
     );
   }
@@ -21,7 +27,7 @@ export async function POST(request: NextRequest) {
   try {
     await app.webhooks.verifyAndReceive({
       id: delivery,
-      name: "issue_comment",
+      name: eventName as "issue_comment" | "pull_request",
       payload,
       signature,
     });
@@ -34,18 +40,37 @@ export async function POST(request: NextRequest) {
   }
 
   const parsedPayload = JSON.parse(payload);
-  const event = parsedPayload;
 
-  if (event.sender?.type === "Bot") {
+  if (parsedPayload.sender?.type === "Bot") {
     return NextResponse.json({ handled: false, reason: "ignored-bot" });
   }
 
   try {
-    const result = await handleGithubFundingCommand(parsedPayload);
+    let result: { handled: boolean; reason: string };
+
+    if (eventName === "issue_comment") {
+      const isOnPr = parsedPayload.issue?.pull_request;
+
+      if (isOnPr) {
+        result = await handlePrComment(parsedPayload);
+      } else {
+        result = await handleGithubFundingCommand(parsedPayload);
+      }
+    } else if (eventName === "pull_request") {
+      if (parsedPayload.action === "opened") {
+        result = await handlePrOpened(parsedPayload);
+      } else if (parsedPayload.action === "closed") {
+        result = await handlePrClosed(parsedPayload);
+      } else {
+        return NextResponse.json({ handled: false, reason: "ignored-action" });
+      }
+    } else {
+      return NextResponse.json({ handled: false, reason: "ignored-event" });
+    }
 
     return NextResponse.json(result);
   } catch (handlerError) {
-    console.error("Error handling GitHub funding command:", handlerError);
+    console.error("Error handling GitHub webhook:", handlerError);
 
     return NextResponse.json(
       { error: "handler-failed", message: String(handlerError) },
