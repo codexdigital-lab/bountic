@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getServerEnv } from "@/lib/env/server";
+import { getLocusServerEnv } from "@/lib/env/server";
 
 type LocusSuccess<T> = {
   success: true;
@@ -55,7 +55,7 @@ export type LocusClient = {
 let locusClient: LocusClient | undefined;
 
 function getAbsoluteUrl(path: string): string {
-  const env = getServerEnv();
+  const env = getLocusServerEnv();
   const baseUrl = env.LOCUS_API_BASE_URL.replace(/\/$/, "");
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
 
@@ -67,7 +67,7 @@ export function getLocusServerClient(): LocusClient {
     return locusClient;
   }
 
-  const env = getServerEnv();
+  const env = getLocusServerEnv();
 
   locusClient = {
     async request<T>(path: string, options: LocusRequestOptions = {}): Promise<T> {

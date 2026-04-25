@@ -2,7 +2,7 @@ import "server-only";
 
 import { App, Octokit } from "octokit";
 
-import { getServerEnv } from "@/lib/env/server";
+import { getGithubServerEnv } from "@/lib/env/server";
 
 let githubApp: App | undefined;
 
@@ -19,7 +19,7 @@ export function getGithubAppClient(): App {
     return githubApp;
   }
 
-  const env = getServerEnv();
+  const env = getGithubServerEnv();
 
   githubApp = new App({
     appId: env.GITHUB_APP_ID,

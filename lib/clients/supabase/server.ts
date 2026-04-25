@@ -1,19 +1,24 @@
 import "server-only";
 
+import { createServerClient } from "@supabase/ssr";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 
-import { getServerEnv } from "@/lib/env/server";
+import { getSupabaseServerEnv } from "@/lib/env/server";
+import type { Database } from "@/lib/types/database";
 
-let serviceClient: SupabaseClient | undefined;
+export type SupabaseDbClient = SupabaseClient<Database>;
 
-export function getSupabaseServiceClient(): SupabaseClient {
+let serviceClient: SupabaseDbClient | undefined;
+
+export function getSupabaseServiceClient(): SupabaseDbClient {
   if (serviceClient) {
     return serviceClient;
   }
 
-  const env = getServerEnv();
+  const env = getSupabaseServerEnv();
 
-  serviceClient = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_KEY, {
+  serviceClient = createClient<Database>(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_KEY, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
@@ -21,4 +26,26 @@ export function getSupabaseServiceClient(): SupabaseClient {
   });
 
   return serviceClient;
+}
+
+export async function getSupabaseServerClient(): Promise<SupabaseDbClient> {
+  const env = getSupabaseServerEnv();
+  const cookieStore = await cookies();
+
+  return createServerClient<Database>(
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        },
+      },
+    },
+  );
 }
