@@ -49,6 +49,7 @@ const locusWebhookSchema = z.object({
 type CheckoutSession = {
   id: string;
   checkoutUrl: string;
+  webhookSecret: string | null;
 };
 
 function toCurrencyAmount(amount: number): string {
@@ -63,12 +64,16 @@ function extractCheckoutSession(payload: unknown): CheckoutSession {
       checkoutUrl: z.string().url().optional(),
       url: z.string().url().optional(),
       checkout_url: z.string().url().optional(),
+      webhookSecret: z.string().optional(),
+      webhook_secret: z.string().optional(),
       session: z
         .object({
           id: z.string().optional(),
           checkoutUrl: z.string().url().optional(),
           url: z.string().url().optional(),
           checkout_url: z.string().url().optional(),
+          webhookSecret: z.string().optional(),
+          webhook_secret: z.string().optional(),
         })
         .optional(),
     })
@@ -94,7 +99,14 @@ function extractCheckoutSession(payload: unknown): CheckoutSession {
     candidate.session?.url ??
     `${env.NEXT_PUBLIC_APP_URL}/checkout/${id}`;
 
-  return { id, checkoutUrl };
+  const webhookSecret =
+    candidate.webhookSecret ??
+    candidate.webhook_secret ??
+    candidate.session?.webhookSecret ??
+    candidate.session?.webhook_secret ??
+    null;
+
+  return { id, checkoutUrl, webhookSecret };
 }
 
 async function getIssueInstallationClient(
@@ -318,6 +330,7 @@ export async function handleGithubFundingCommand(eventPayload: unknown) {
       funder_username: payload.comment.user.login,
       amount: command.amount,
       locus_checkout_id: checkoutSession.id,
+      locus_webhook_secret: checkoutSession.webhookSecret,
       payment_status: "PENDING",
     });
 

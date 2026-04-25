@@ -70,6 +70,7 @@ export type Database = {
           funder_username: string;
           amount: number;
           locus_checkout_id: string;
+          locus_webhook_secret: string | null;
           payment_status: Database["public"]["Enums"]["funding_payment_status"];
           created_at: string;
         };
@@ -79,6 +80,7 @@ export type Database = {
           funder_username: string;
           amount: number;
           locus_checkout_id: string;
+          locus_webhook_secret?: string | null;
           payment_status?: Database["public"]["Enums"]["funding_payment_status"];
           created_at?: string;
         };
@@ -88,6 +90,7 @@ export type Database = {
           funder_username?: string;
           amount?: number;
           locus_checkout_id?: string;
+          locus_webhook_secret?: string | null;
           payment_status?: Database["public"]["Enums"]["funding_payment_status"];
           created_at?: string;
         };

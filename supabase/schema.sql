@@ -41,6 +41,7 @@ create table if not exists public.funding_events (
   funder_username text not null,
   amount double precision not null,
   locus_checkout_id text not null,
+  locus_webhook_secret text,
   payment_status public.funding_payment_status not null default 'PENDING',
   created_at timestamptz not null default now(),
   constraint funding_events_amount_positive check (amount > 0)

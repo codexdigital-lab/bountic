@@ -53,6 +53,7 @@ export type LocusRequestOptions = {
 export type LocusClient = {
   request<T>(path: string, options?: LocusRequestOptions): Promise<T>;
   verifyWebhookSignature(payload: string, signature: string): boolean;
+  verifyWebhookSignatureWithSecret(payload: string, signature: string, secret: string): boolean;
 };
 
 let locusClient: LocusClient | undefined;
@@ -104,19 +105,31 @@ export function getLocusServerClient(): LocusClient {
         return false;
       }
 
-      const expected =
-        "sha256=" +
-        crypto.createHmac("sha256", env.LOCUS_WEBHOOK_SECRET).update(payload).digest("hex");
+      return verifySignatureWithSecret(payload, signature, env.LOCUS_WEBHOOK_SECRET);
+    },
 
-      const provided = signature.trim();
-
-      if (provided.length !== expected.length) {
-        return false;
-      }
-
-      return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+    verifyWebhookSignatureWithSecret(payload: string, signature: string, secret: string): boolean {
+      return verifySignatureWithSecret(payload, signature, secret);
     },
   };
 
   return locusClient;
+}
+
+function verifySignatureWithSecret(payload: string, signature: string, secret: string): boolean {
+  if (!secret) {
+    return false;
+  }
+
+  const expected =
+    "sha256=" +
+    crypto.createHmac("sha256", secret).update(payload).digest("hex");
+
+  const provided = signature.trim();
+
+  if (provided.length !== expected.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
 }
