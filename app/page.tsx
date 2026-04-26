@@ -1,17 +1,17 @@
 import Link from "next/link";
+
+import { SiteShell } from "@/components/site/site-shell";
 import { Button } from "@/components/ui/button";
 import { fetchBounties } from "@/lib/api/client";
-import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
 async function getStats() {
   try {
-    const data = await fetchBounties({ limit: 1000 });
+    const data = await fetchBounties({ limit: 100 });
     const totalBounties = data.bounties.length;
-    const totalFunded = data.bounties.reduce((sum, b) => sum + b.total_amount, 0);
-    
-    const paidBounties = data.bounties.filter((b) => b.status === "PAID").length;
+    const totalFunded = data.bounties.reduce((sum, bounty) => sum + bounty.total_amount, 0);
+    const paidBounties = data.bounties.filter((bounty) => bounty.status === "PAID").length;
     return { totalBounties, totalFunded, paidBounties };
   } catch {
     return { totalBounties: 0, totalFunded: 0, paidBounties: 0 };
@@ -36,258 +36,167 @@ export default async function HomePage() {
   const featuredBounties = await getFeaturedBounties();
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-900/50 glass">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold tracking-tight flex items-center gap-2">
-            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-              <Image src="/logo.png" alt="Bountic" width={28} height={28} className="h-8 w-8 contrast-125" />
-            </div>
-            <span className="text-zinc-100">Bountic</span>
-          </Link>
-          <nav className="flex items-center gap-4">
-            <Link href="/explore" className="text-zinc-400 hover:text-zinc-100 transition-colors text-sm font-medium">
-              Explore
-            </Link>
-            <Button 
-              size="sm" 
-              className="bg-green-500 hover:bg-green-600 text-black font-medium border-0"
-            >
-              Add to Your Repo
-            </Button>
-          </nav>
-        </div>
-      </header>
-
-      <main>
-        <section className="relative py-20 px-6 overflow-hidden">
-          <div className="absolute inset-0 gradient-mesh" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-green-500/5 rounded-full blur-3xl" />
-          
-          <div className="max-w-4xl mx-auto relative z-10">
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/80 border border-zinc-800 text-xs text-zinc-400 mb-6">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                Live on Mainnet
-              </div>
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight">
-                Autonomous USDC
-                <br />
-                <span className="text-gradient">bounties for open source</span>
-              </h1>
-              <p className="text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                Fund open-source issues with USDC, get automatically paid when PRs merge. 
-                Zero friction, zero intermediaries, instant payouts.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/explore">
-                  <Button size="lg" className="bg-green-500 hover:bg-green-600 text-black font-semibold px-8 h-12 text-base">
-                    Explore Bounties
-                  </Button>
-                </Link>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="border-zinc-700 text-zinc-200 hover:bg-zinc-900 hover:text-white px-8 h-12 text-base bg-transparent"
-                >
-                  Add to Your Repo
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex justify-center gap-12 mt-16 text-center">
-              <div>
-                <div className="text-3xl font-bold text-zinc-100">{totalBounties}</div>
-                <div className="text-sm text-zinc-500">Bounties Created</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-green-400">${formatAmount(totalFunded)}</div>
-                <div className="text-sm text-zinc-500">Total Funded</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-zinc-100">{paidBounties}</div>
-                <div className="text-sm text-zinc-500">Payouts Made</div>
-              </div>
-            </div>
+    <SiteShell>
+      <section className="relative overflow-hidden px-5 pb-16 pt-12 sm:px-8 sm:pt-16">
+        <div className="mx-auto max-w-5xl text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 text-xs text-zinc-400">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            Label-first funding workflow
           </div>
-        </section>
 
-        <section className="py-8 px-6">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl font-bold mb-2">See How It Works</h2>
-            <p className="text-zinc-500 mb-6 text-sm">Watch a quick demo of funding an issue and receiving the payout</p>
-            <div className="w-full aspect-video bg-zinc-900/50 rounded-xl border border-zinc-800 flex items-center justify-center max-w-xl mx-auto">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <p className="text-zinc-500 text-sm">Loom video placeholder</p>
-              </div>
-            </div>
-          </div>
-        </section>
+          <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-zinc-100 sm:text-6xl">
+            The bounty issue page GitHub never built
+          </h1>
+          <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-zinc-400 sm:text-lg">
+            Maintainers label an issue with <span className="text-emerald-300">Bounty</span>, contributors fund directly on
+            the Bountic page, and maintainers approve payouts on the web once linked PRs are merged.
+          </p>
 
-        {featuredBounties.length > 0 && (
-          <section className="py-20 px-6 border-y border-zinc-900/50">
-            <div className="max-w-6xl mx-auto">
-              <div className="flex items-center justify-between mb-10">
-                <div>
-                  <h2 className="text-2xl font-bold mb-2">Featured Bounties</h2>
-                  <p className="text-zinc-500">Top open bounties worth funding</p>
-                </div>
-                <Link href="/explore" className="text-green-400 hover:text-green-300 text-sm font-medium">
-                  View all →
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {featuredBounties.slice(0, 3).map((bounty) => (
-                  <Link key={bounty.issue_id} href={`/bounty/${bounty.owner}/${bounty.repo}/${bounty.issue_number}`}>
-                    <div className="glass rounded-xl p-5 hover:border-green-500/30 transition-all group cursor-pointer">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs font-mono text-zinc-500">{bounty.owner}/{bounty.repo}</span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
-                          {bounty.status}
-                        </span>
-                      </div>
-                      <div className="text-xl font-bold text-green-400 font-mono mb-1">
-                        ${formatAmount(bounty.total_amount)}
-                        <span className="text-sm font-normal text-zinc-500 ml-1">USDC</span>
-                      </div>
-                      <div className="text-xs text-zinc-600 font-mono">#{bounty.issue_number}</div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        <section className="py-24 px-6">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-16">How It Works</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="relative">
-                <div className="absolute -left-4 top-0 bottom-0 w-px bg-gradient-to-b from-green-500/0 via-green-500/30 to-green-500/0 hidden md:block" />
-                <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-4 border border-green-500/20">
-                  <span className="text-green-400 font-bold">1</span>
-                </div>
-                <h3 className="text-lg font-semibold mb-2 text-zinc-100">Fund an Issue</h3>
-                <p className="text-zinc-500 text-sm leading-relaxed">
-                  Comment <code className="text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded text-xs">/bounty 50</code> on any GitHub issue. Lock in a USDC bounty instantly.
-                </p>
-              </div>
-              <div className="relative">
-                <div className="absolute -left-4 top-0 bottom-0 w-px bg-gradient-to-b from-green-500/0 via-green-500/30 to-green-500/0 hidden md:block" />
-                <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-4 border border-green-500/20">
-                  <span className="text-green-400 font-bold">2</span>
-                </div>
-                <h3 className="text-lg font-semibold mb-2 text-zinc-100">PR Gets Merged</h3>
-                <p className="text-zinc-500 text-sm leading-relaxed">
-                  When a PR is merged, the bounty automatically locks. No manual intervention needed.
-                </p>
-              </div>
-              <div className="relative">
-                <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-4 border border-green-500/20">
-                  <span className="text-green-400 font-bold">3</span>
-                </div>
-                <h3 className="text-lg font-semibold mb-2 text-zinc-100">Get Paid</h3>
-                <p className="text-zinc-500 text-sm leading-relaxed">
-                  Run <code className="text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded text-xs">/approve</code> to trigger an instant USDC payout to your wallet.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-24 px-6 bg-zinc-950/50 border-y border-zinc-900/50">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-12">Why Bountic?</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="glass rounded-xl p-6">
-                <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center mb-4">
-                  <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Instant Payouts</h3>
-                <p className="text-zinc-500 text-sm">
-                  No waiting periods. Once approved, USDC is sent directly to your wallet via Locus.
-                </p>
-              </div>
-              <div className="glass rounded-xl p-6">
-                <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center mb-4">
-                  <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Secure Escrow</h3>
-                <p className="text-zinc-500 text-sm">
-                  Funds are locked in smart contract escrow. Only released when conditions are met.
-                </p>
-              </div>
-              <div className="glass rounded-xl p-6">
-                <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center mb-4">
-                  <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Permissionless</h3>
-                <p className="text-zinc-500 text-sm">
-                  No gatekeeping. Anyone can fund any issue. No approval needed from maintainers.
-                </p>
-              </div>
-              <div className="glass rounded-xl p-6">
-                <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center mb-4">
-                  <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">GitHub Native</h3>
-                <p className="text-zinc-500 text-sm">
-                  Everything happens in GitHub. No separate app needed. Just use commands.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-24 px-6 bg-gradient-to-b from-zinc-900/50 to-black border-t border-zinc-900/50">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-6">Ready to fund some bounties?</h2>
-            <p className="text-zinc-400 mb-8 max-w-xl mx-auto">
-              Join the open-source funding revolution. Fund issues you care about, 
-              get developers paid fairly.
-            </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/explore">
-              <Button size="lg" className="bg-green-500 hover:bg-green-600 text-black font-semibold px-8 h-12 text-base">
-                Browse All Bounties
-              </Button>
+              <Button className="h-11 bg-emerald-400 px-8 text-base text-black hover:bg-emerald-300">Explore Bounties</Button>
             </Link>
+            <a
+              href="https://github.com/apps"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 items-center justify-center rounded-lg border border-zinc-700 px-8 text-base text-zinc-200 transition-colors hover:bg-zinc-900"
+            >
+              Install GitHub App
+            </a>
           </div>
-        </section>
-      </main>
 
-      <footer className="border-t border-zinc-900 py-12 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-2">
-              <Image src="/logo.png" width={32} height={32} alt="Bountic" className="h-8 w-8 contrast-150" />
-              <span className="text-zinc-400 text-sm">Bountic — Autonomous USDC bounties</span>
+          <div className="mt-12 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/70 p-6 text-center">
+              <p className="text-3xl font-semibold text-zinc-100">{totalBounties}</p>
+              <p className="mt-1 text-sm text-zinc-500">Bounties Created</p>
             </div>
-            <div className="flex gap-8 text-sm text-zinc-500">
-              <a href="https://github.com" className="hover:text-zinc-300 transition-colors">GitHub</a>
-              <a href="#" className="hover:text-zinc-300 transition-colors">Twitter</a>
-              <a href="#" className="hover:text-zinc-300 transition-colors">Discord</a>
+            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/70 p-6 text-center">
+              <p className="text-3xl font-semibold text-emerald-300">${formatAmount(totalFunded)}</p>
+              <p className="mt-1 text-sm text-zinc-500">Total Funded</p>
             </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-zinc-900 text-center text-zinc-600 text-sm">
-            © 2026 Bountic. Built for the open-source community.
+            <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/70 p-6 text-center">
+              <p className="text-3xl font-semibold text-zinc-100">{paidBounties}</p>
+              <p className="mt-1 text-sm text-zinc-500">Payouts Made</p>
+            </div>
           </div>
         </div>
-      </footer>
-    </div>
+      </section>
+
+      <section className="px-5 py-8 sm:px-8">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2 className="text-2xl font-bold text-zinc-100">See How It Works</h2>
+          <p className="mt-2 text-sm text-zinc-500">Watch a quick demo of funding an issue and receiving payout</p>
+          <div className="mx-auto mt-6 flex aspect-video w-full max-w-3xl items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/60">
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800">
+                <svg className="h-8 w-8 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <p className="text-sm text-zinc-500">Loom video placeholder</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {featuredBounties.length > 0 ? (
+        <section className="border-y border-zinc-900/80 bg-zinc-950/40 px-5 py-16 sm:px-8">
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-8 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold text-zinc-100">Featured Bounties</h2>
+                <p className="mt-1 text-sm text-zinc-500">Top open bounties worth funding right now</p>
+              </div>
+              <Link href="/explore" className="text-sm text-emerald-300 hover:text-emerald-200">
+                View all
+              </Link>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {featuredBounties.slice(0, 3).map((bounty) => (
+                <Link key={bounty.issue_id} href={`/bounty/${bounty.owner}/${bounty.repo}/${bounty.issue_number}`}>
+                  <div className="rounded-2xl border border-zinc-800/80 bg-gradient-to-b from-zinc-900 to-zinc-950 p-5 transition-colors hover:border-emerald-400/50">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs text-zinc-500">{bounty.owner}/{bounty.repo}</span>
+                      <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-xs text-emerald-300">
+                        {bounty.status}
+                      </span>
+                    </div>
+                    <p className="mt-4 font-mono text-2xl font-bold text-emerald-300">${formatAmount(bounty.total_amount)}</p>
+                    <p className="mt-1 text-xs text-zinc-500">Issue #{bounty.issue_number}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="text-center text-2xl font-semibold text-zinc-100 sm:text-3xl">How it works</h2>
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/70 p-5">
+              <p className="text-xs uppercase tracking-[0.2em] text-emerald-300">Step 1</p>
+              <h3 className="mt-2 text-lg font-semibold text-zinc-100">Maintainer adds Bounty label</h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+                The webhook creates and updates a pinned ledger comment with status, total amount, and issue page link.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/70 p-5">
+              <p className="text-xs uppercase tracking-[0.2em] text-emerald-300">Step 2</p>
+              <h3 className="mt-2 text-lg font-semibold text-zinc-100">Fund on the issue page</h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+                Contributors use inline checkout to add USDC. Activity feed and leaderboard update automatically.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/70 p-5">
+              <p className="text-xs uppercase tracking-[0.2em] text-emerald-300">Step 3</p>
+              <h3 className="mt-2 text-lg font-semibold text-zinc-100">Approve payout on web</h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+                Once a PR with <span className="text-zinc-200">Fixes #123</span> is merged, maintainers approve payment in UI.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-zinc-900/80 bg-zinc-950/50 px-5 py-16 sm:px-8">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="text-center text-2xl font-semibold text-zinc-100 sm:text-3xl">Why Bountic?</h2>
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/70 p-6">
+              <h3 className="text-lg font-semibold text-zinc-100">Issue-native funding</h3>
+              <p className="mt-2 text-sm text-zinc-400">No extra repo noise. Maintainers only add one label and keep working in GitHub.</p>
+            </div>
+            <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/70 p-6">
+              <h3 className="text-lg font-semibold text-zinc-100">Agent-friendly APIs</h3>
+              <p className="mt-2 text-sm text-zinc-400">Structured explore, bounty, and funding APIs for autonomous contributors and funders.</p>
+            </div>
+            <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/70 p-6">
+              <h3 className="text-lg font-semibold text-zinc-100">Transparent activity</h3>
+              <p className="mt-2 text-sm text-zinc-400">Every action from funding to payout appears in one timeline for maintainers and contributors.</p>
+            </div>
+            <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/70 p-6">
+              <h3 className="text-lg font-semibold text-zinc-100">Fast payout execution</h3>
+              <p className="mt-2 text-sm text-zinc-400">Merged winning PRs can be paid quickly from the Bountic page once maintainer permissions are verified.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-5 py-20 sm:px-8">
+        <div className="mx-auto max-w-4xl rounded-3xl border border-zinc-800/80 bg-zinc-900/70 p-10 text-center">
+          <h2 className="text-3xl font-semibold text-zinc-100">Ready to fund and ship faster?</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-zinc-400">
+            Explore active bounties, support important issues, and reward merged contributors in one place.
+          </p>
+          <Link href="/explore" className="mt-7 inline-flex">
+            <Button className="h-11 bg-emerald-400 px-8 text-base text-black hover:bg-emerald-300">Browse All Bounties</Button>
+          </Link>
+        </div>
+      </section>
+    </SiteShell>
   );
 }

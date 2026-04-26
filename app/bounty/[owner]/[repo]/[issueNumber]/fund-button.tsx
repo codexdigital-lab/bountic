@@ -35,6 +35,7 @@ export function FundButton({ issueId, issueUrl }: Props) {
         amount: numAmount,
         funder_username: funderUsername,
         issue_url: issueUrl,
+        funding_source: "WEB",
       });
 
       setCheckoutUrl(response.checkout_url);

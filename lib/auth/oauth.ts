@@ -18,7 +18,7 @@ export async function createGithubOAuthSignInUrl(nextPath = "/dashboard"): Promi
     provider: "github",
     options: {
       redirectTo: callbackUrl.toString(),
-      scopes: "read:user user:email",
+      scopes: "read:user user:email repo",
     },
   });
 

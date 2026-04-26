@@ -1,6 +1,7 @@
 import { fetchBounties, type Bounty } from "@/lib/api/client";
 import { BountyGrid } from "@/components/bounty/bounty-grid";
 import { FilterBar } from "@/components/bounty/filter-bar";
+import { SiteShell } from "@/components/site/site-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -32,48 +33,53 @@ export default async function ExplorePage(props: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold mb-4">Explore Bounties</h1>
-          <p className="text-zinc-400 text-lg">
-            Find open-source issues with active bounties to fund
-          </p>
-        </div>
-
-        <FilterBar />
-
-        <BountyGrid bounties={bounties} />
-
-        {pagination.count > 0 && (
-          <div className="mt-8 flex justify-center gap-4">
-            {offset > 0 && (
-              <a
-                href={`/explore?${new URLSearchParams({
-                  ...(status && status !== "all" ? { status } : {}),
-                  sort,
-                  offset: String(Math.max(0, offset - limit)),
-                }).toString()}`}
-                className="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-300 hover:border-zinc-700"
-              >
-                Previous
-              </a>
-            )}
-            {pagination.count === limit && (
-              <a
-                href={`/explore?${new URLSearchParams({
-                  ...(status && status !== "all" ? { status } : {}),
-                  sort,
-                  offset: String(offset + limit),
-                }).toString()}`}
-                className="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-300 hover:border-zinc-700"
-              >
-                Next
-              </a>
-            )}
+    <SiteShell>
+      <section className="px-5 py-12 sm:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-8 rounded-2xl border border-zinc-800/70 bg-zinc-900/60 p-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-emerald-300/90">Bounty Explorer</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-100 sm:text-4xl">Explore Active Issues</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-zinc-400 sm:text-base">
+              Discover open-source issues with funding, filter by lifecycle stage, and jump straight into each issue
+              page to fund or track payout activity.
+            </p>
+            <div className="mt-6">
+              <FilterBar />
+            </div>
           </div>
-        )}
-      </div>
-    </div>
+
+          <BountyGrid bounties={bounties} />
+
+          {pagination.count > 0 ? (
+            <div className="mt-8 flex justify-center gap-4">
+              {offset > 0 ? (
+                <a
+                  href={`/explore?${new URLSearchParams({
+                    ...(status && status !== "all" ? { status } : {}),
+                    sort,
+                    offset: String(Math.max(0, offset - limit)),
+                  }).toString()}`}
+                  className="rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-zinc-300 transition-colors hover:bg-zinc-800"
+                >
+                  Previous
+                </a>
+              ) : null}
+              {pagination.count === limit ? (
+                <a
+                  href={`/explore?${new URLSearchParams({
+                    ...(status && status !== "all" ? { status } : {}),
+                    sort,
+                    offset: String(offset + limit),
+                  }).toString()}`}
+                  className="rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-zinc-300 transition-colors hover:bg-zinc-800"
+                >
+                  Next
+                </a>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </section>
+    </SiteShell>
   );
 }

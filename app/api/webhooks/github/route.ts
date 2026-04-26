@@ -2,10 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { getGithubAppClient } from "@/lib/clients/github/server";
 import {
-  handleGithubFundingCommand,
+  handleIssueLabeled,
   handlePrOpened,
   handlePrClosed,
-  handlePrComment,
 } from "@/lib/bounty/handlers";
 
 export async function POST(request: NextRequest) {
@@ -27,7 +26,7 @@ export async function POST(request: NextRequest) {
   try {
     await app.webhooks.verifyAndReceive({
       id: delivery,
-      name: eventName as "issue_comment" | "pull_request",
+      name: eventName as "issues" | "issue_comment" | "pull_request",
       payload,
       signature,
     });
@@ -41,21 +40,21 @@ export async function POST(request: NextRequest) {
 
   const parsedPayload = JSON.parse(payload);
 
-  if (parsedPayload.sender?.type === "Bot") {
-    return NextResponse.json({ handled: false, reason: "ignored-bot" });
-  }
+    if (parsedPayload.sender?.type === "Bot") {
+      return NextResponse.json({ handled: false, reason: "ignored-bot" });
+    }
 
   try {
     let result: { handled: boolean; reason: string };
 
-    if (eventName === "issue_comment") {
-      const isOnPr = parsedPayload.issue?.pull_request;
-
-      if (isOnPr) {
-        result = await handlePrComment(parsedPayload);
+    if (eventName === "issues") {
+      if (parsedPayload.action === "labeled") {
+        result = await handleIssueLabeled(parsedPayload);
       } else {
-        result = await handleGithubFundingCommand(parsedPayload);
+        return NextResponse.json({ handled: false, reason: "ignored-action" });
       }
+    } else if (eventName === "issue_comment") {
+      return NextResponse.json({ handled: false, reason: "issue-comments-disabled" });
     } else if (eventName === "pull_request") {
       if (parsedPayload.action === "opened") {
         result = await handlePrOpened(parsedPayload);

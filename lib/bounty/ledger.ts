@@ -7,34 +7,55 @@ function formatAmount(amount: number): string {
   return amount.toFixed(2);
 }
 
+function getStatusBadge(status: "OPEN" | "LOCKED" | "PAID"): string {
+  if (status === "OPEN") {
+    return "🟢 OPEN";
+  }
+
+  if (status === "LOCKED") {
+    return "🟡 LOCKED";
+  }
+
+  return "✅ PAID";
+}
+
 export function buildLedgerCommentBody(
   issueId: string,
   bounty: Pick<BountyRow, "total_amount" | "status" | "payout_tx_hash">,
   fundingEvents: Array<Pick<FundingEventRow, "funder_username" | "amount" | "payment_status">>,
+  issuePageUrl?: string,
 ): string {
   const successfulEvents = fundingEvents.filter((event) => event.payment_status === "SUCCESS");
+  const leaderboard = [...successfulEvents].sort((a, b) => b.amount - a.amount);
 
   const lines = [
-    `## Bountic Ledger`,
-    `Issue: \`${issueId}\``,
-    `Status: **${bounty.status}**`,
+    `## 💰 Bountic Ledger`,
+    "",
+    `**Issue:** \`${issueId}\``,
+    `**Status:** **${getStatusBadge(bounty.status)}**`,
+    `**Total Bounty:** **$${formatAmount(bounty.total_amount)} USDC**`,
     ``,
-    `| Funder | Amount (USDC) |`,
-    `| --- | ---: |`,
+    `### Leaderboard`,
+    `| Rank | Funder | Contribution |`,
+    `| ---: | --- | ---: |`,
   ];
 
-  for (const event of successfulEvents) {
-    lines.push(`| @${event.funder_username} | ${formatAmount(event.amount)} |`);
+  for (const [index, event] of leaderboard.entries()) {
+    lines.push(`| ${index + 1} | @${event.funder_username} | $${formatAmount(event.amount)} |`);
   }
 
-  if (successfulEvents.length === 0) {
-    lines.push(`| _No funding confirmed yet_ | 0.00 |`);
+  if (leaderboard.length === 0) {
+    lines.push(`| 1 | _No funding confirmed yet_ | $0.00 |`);
   }
 
-  lines.push(``, `**Total:** ${formatAmount(bounty.total_amount)} USDC`);
+  lines.push("", "---", "_This comment is managed by Bountic and stays pinned for quick tracking._");
 
   if (bounty.payout_tx_hash) {
-    lines.push(`**Payout Tx:** \`${bounty.payout_tx_hash}\``);
+    lines.push(`- **Payout Tx:** \`${bounty.payout_tx_hash}\``);
+  }
+
+  if (issuePageUrl) {
+    lines.push(`- **Issue Page:** [Open Bounty Dashboard](${issuePageUrl})`);
   }
 
   return lines.join("\n");
@@ -62,6 +83,8 @@ export function buildBountyActiveBody(
   }
 
   lines.push(
+    `Linked Issue: \`${issueId}\``,
+    "",
     "When the PR is merged, the bounty will be locked and ready for payout.",
     "",
     "---",
@@ -79,7 +102,7 @@ export function buildLockedCommentBody(issueId: string, amount: number): string 
     "",
     `**Amount:** ${formatAmount(amount)} USDC`,
     "",
-    "The bounty is now ready for payout. Use `/approve` to release the funds.",
+    "The bounty is now ready for payout. A maintainer can approve payment from the Bountic issue page.",
     "",
     "---",
     "_Bountic: Autonomous USDC bounties for open source_",

@@ -10,6 +10,7 @@ const fundBodySchema = z.object({
   amount: z.number().positive(),
   funder_username: z.string().min(1),
   issue_url: z.string().url().optional(),
+  funding_source: z.enum(["WEB", "API"]).default("WEB"),
 });
 
 export async function POST(request: NextRequest) {
@@ -42,6 +43,7 @@ export async function POST(request: NextRequest) {
       issue_id: validated.issue_id,
       funder_username: validated.funder_username,
       amount: validated.amount,
+      funding_source: validated.funding_source,
       locus_checkout_id: checkoutSession.id,
       locus_webhook_secret: checkoutSession.webhookSecret,
       payment_status: "PENDING",

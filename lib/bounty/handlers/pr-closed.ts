@@ -5,6 +5,7 @@ import { buildIssueId } from "@/lib/bounty/issue-id";
 import { buildLockedCommentBody } from "@/lib/bounty/ledger";
 import { prClosedPayloadSchema } from "@/lib/bounty/schemas/payloads";
 import { getSupabaseServiceClient } from "@/lib/clients/supabase/server";
+import { extractIssueNumberFromPrBody } from "@/lib/bounty/commands";
 
 async function getIssueInstallationClient(owner: string, repo: string, installationId?: number) {
   if (installationId) {
@@ -24,7 +25,13 @@ export async function handlePrClosed(eventPayload: unknown) {
 
   const owner = payload.repository.owner.login;
   const repo = payload.repository.name;
-  const issueId = buildIssueId(owner, repo, payload.pull_request.number);
+  const linkedIssueNumber = extractIssueNumberFromPrBody(payload.pull_request.body);
+
+  if (!linkedIssueNumber) {
+    return { handled: false, reason: "no-linked-issue-in-pr-body" };
+  }
+
+  const issueId = buildIssueId(owner, repo, linkedIssueNumber);
 
   const supabase = getSupabaseServiceClient();
   const { data: bounty, error: bountyError } = await supabase
@@ -41,10 +48,37 @@ export async function handlePrClosed(eventPayload: unknown) {
     return { handled: false, reason: "no-bounty-or-already-paid" };
   }
 
-  await supabase
+  const { error: lockError } = await supabase
     .from("bounties")
-    .update({ status: "LOCKED" })
+    .update({
+      status: "LOCKED",
+      winning_pr_number: payload.pull_request.number,
+      winning_pr_author: payload.pull_request.user.login,
+      winning_pr_url: payload.pull_request.html_url ?? null,
+      locked_at: new Date().toISOString(),
+    })
     .eq("issue_id", issueId);
+
+  if (lockError) {
+    throw new Error(`Failed to lock bounty: ${lockError.message}`);
+  }
+
+  const { error: activityError } = await supabase.from("activity_events").insert({
+    issue_id: issueId,
+    event_type: "BOUNTY_LOCKED",
+    actor_username: payload.pull_request.user.login,
+    amount: bounty.total_amount,
+    pr_number: payload.pull_request.number,
+    pr_url: payload.pull_request.html_url ?? null,
+    metadata: {
+      source: "pull_request.closed",
+      merged: true,
+    },
+  });
+
+  if (activityError) {
+    throw new Error(`Failed to record lock activity: ${activityError.message}`);
+  }
 
   const github = await getIssueInstallationClient(owner, repo, payload.installation?.id);
 
@@ -61,6 +95,8 @@ export async function handlePrClosed(eventPayload: unknown) {
     handled: true,
     reason: "bounty-locked",
     issueId,
+    linkedIssueNumber,
+    prNumber: payload.pull_request.number,
     amount: bounty.total_amount,
   };
 }

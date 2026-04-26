@@ -46,9 +46,9 @@ export function FilterBar() {
   );
 
   return (
-    <div className="flex flex-wrap gap-4 items-center mb-8">
+    <div className="flex flex-wrap items-center gap-3">
       <Select value={currentStatus as string} onValueChange={(v) => v && updateParams("status", v)}>
-        <SelectTrigger className="w-[160px] bg-zinc-900 border-zinc-800 text-zinc-300">
+        <SelectTrigger className="h-10 w-[170px] border-zinc-700 bg-zinc-950 text-zinc-300">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent className="bg-zinc-900 border-zinc-800">
@@ -65,7 +65,7 @@ export function FilterBar() {
       </Select>
 
       <Select value={currentSort as string} onValueChange={(v) => v && updateParams("sort", v)}>
-        <SelectTrigger className="w-[180px] bg-zinc-900 border-zinc-800 text-zinc-300">
+        <SelectTrigger className="h-10 w-[200px] border-zinc-700 bg-zinc-950 text-zinc-300">
           <SelectValue placeholder="Sort" />
         </SelectTrigger>
         <SelectContent className="bg-zinc-900 border-zinc-800">
@@ -83,9 +83,9 @@ export function FilterBar() {
 
       <Button
         variant="ghost"
-        size="sm"
+        size="default"
         onClick={() => router.push("/explore")}
-        className="text-zinc-500 hover:text-zinc-300"
+        className="h-10 border border-zinc-700 bg-zinc-950 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
       >
         Clear filters
       </Button>

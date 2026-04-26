@@ -27,6 +27,43 @@ export const githubIssueCommentPayloadSchema = z.object({
   }),
 });
 
+export const githubIssueLabeledPayloadSchema = z.object({
+  action: z.literal("labeled"),
+  installation: z
+    .object({
+      id: z.number().int().positive(),
+    })
+    .optional(),
+  repository: z.object({
+    name: z.string().min(1),
+    owner: z.object({
+      login: z.string().min(1),
+    }),
+  }),
+  issue: z.object({
+    number: z.number().int().positive(),
+    title: z.string().min(1),
+    body: z.string().nullable(),
+    state: z.string().min(1),
+    html_url: z.string().url(),
+    pull_request: z.unknown().optional(),
+    labels: z.array(
+      z.union([
+        z.string(),
+        z.object({
+          name: z.string().min(1),
+        }),
+      ]),
+    ),
+  }),
+  label: z.union([
+    z.string(),
+    z.object({
+      name: z.string().min(1),
+    }),
+  ]),
+});
+
 export const locusWebhookSchema = z.object({
   event: z.string(),
   data: z.record(z.string(), z.unknown()),

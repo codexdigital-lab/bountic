@@ -35,9 +35,19 @@ export type Database = {
           issue_id: string;
           status: Database["public"]["Enums"]["bounty_status"];
           total_amount: number;
+          issue_title: string | null;
+          issue_body: string | null;
+          issue_state: string | null;
+          issue_url: string | null;
           ledger_comment_id: string | null;
           funded_by_agent: boolean;
           payout_tx_hash: string | null;
+          winning_pr_number: number | null;
+          winning_pr_author: string | null;
+          winning_pr_url: string | null;
+          locked_at: string | null;
+          paid_at: string | null;
+          approved_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -45,9 +55,19 @@ export type Database = {
           issue_id: string;
           status?: Database["public"]["Enums"]["bounty_status"];
           total_amount?: number;
+          issue_title?: string | null;
+          issue_body?: string | null;
+          issue_state?: string | null;
+          issue_url?: string | null;
           ledger_comment_id?: string | null;
           funded_by_agent?: boolean;
           payout_tx_hash?: string | null;
+          winning_pr_number?: number | null;
+          winning_pr_author?: string | null;
+          winning_pr_url?: string | null;
+          locked_at?: string | null;
+          paid_at?: string | null;
+          approved_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -55,9 +75,19 @@ export type Database = {
           issue_id?: string;
           status?: Database["public"]["Enums"]["bounty_status"];
           total_amount?: number;
+          issue_title?: string | null;
+          issue_body?: string | null;
+          issue_state?: string | null;
+          issue_url?: string | null;
           ledger_comment_id?: string | null;
           funded_by_agent?: boolean;
           payout_tx_hash?: string | null;
+          winning_pr_number?: number | null;
+          winning_pr_author?: string | null;
+          winning_pr_url?: string | null;
+          locked_at?: string | null;
+          paid_at?: string | null;
+          approved_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -69,6 +99,7 @@ export type Database = {
           issue_id: string;
           funder_username: string;
           amount: number;
+          funding_source: Database["public"]["Enums"]["funding_source"];
           locus_checkout_id: string;
           locus_webhook_secret: string | null;
           payment_status: Database["public"]["Enums"]["funding_payment_status"];
@@ -79,6 +110,7 @@ export type Database = {
           issue_id: string;
           funder_username: string;
           amount: number;
+          funding_source?: Database["public"]["Enums"]["funding_source"];
           locus_checkout_id: string;
           locus_webhook_secret?: string | null;
           payment_status?: Database["public"]["Enums"]["funding_payment_status"];
@@ -89,6 +121,7 @@ export type Database = {
           issue_id?: string;
           funder_username?: string;
           amount?: number;
+          funding_source?: Database["public"]["Enums"]["funding_source"];
           locus_checkout_id?: string;
           locus_webhook_secret?: string | null;
           payment_status?: Database["public"]["Enums"]["funding_payment_status"];
@@ -97,6 +130,63 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "funding_events_issue_id_fkey";
+            columns: ["issue_id"];
+            isOneToOne: false;
+            referencedRelation: "bounties";
+            referencedColumns: ["issue_id"];
+          },
+        ];
+      };
+      activity_events: {
+        Row: {
+          id: string;
+          issue_id: string;
+          event_type: Database["public"]["Enums"]["activity_event_type"];
+          actor_username: string | null;
+          amount: number | null;
+          funding_event_id: string | null;
+          pr_number: number | null;
+          pr_url: string | null;
+          tx_hash: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          issue_id: string;
+          event_type: Database["public"]["Enums"]["activity_event_type"];
+          actor_username?: string | null;
+          amount?: number | null;
+          funding_event_id?: string | null;
+          pr_number?: number | null;
+          pr_url?: string | null;
+          tx_hash?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          issue_id?: string;
+          event_type?: Database["public"]["Enums"]["activity_event_type"];
+          actor_username?: string | null;
+          amount?: number | null;
+          funding_event_id?: string | null;
+          pr_number?: number | null;
+          pr_url?: string | null;
+          tx_hash?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "activity_events_funding_event_id_fkey";
+            columns: ["funding_event_id"];
+            isOneToOne: false;
+            referencedRelation: "funding_events";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "activity_events_issue_id_fkey";
             columns: ["issue_id"];
             isOneToOne: false;
             referencedRelation: "bounties";
@@ -154,6 +244,12 @@ export type Database = {
     Enums: {
       bounty_status: "OPEN" | "LOCKED" | "PAID";
       funding_payment_status: "PENDING" | "SUCCESS";
+      funding_source: "WEB" | "API";
+      activity_event_type:
+        | "FUNDING_ADDED"
+        | "PR_COMPETING"
+        | "BOUNTY_LOCKED"
+        | "PAYOUT_SENT";
       payout_status: "PENDING" | "SUCCESS" | "FAILED";
     };
     CompositeTypes: Record<string, never>;

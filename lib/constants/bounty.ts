@@ -1,11 +1,7 @@
 export const BOUNTY_LABELS = {
+  trigger: "Bounty",
   active: "Bounty: Active",
   paid: "Bounty: Paid",
-} as const;
-
-export const BOUNTY_COMMANDS = {
-  fund: "/bounty",
-  approve: "/approve",
 } as const;
 
 export const BOUNTY_ISSUE_ID_REGEX =

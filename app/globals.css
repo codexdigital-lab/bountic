@@ -148,4 +148,29 @@
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-500;
   }
+
+  .scrollbar-thin-dark {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(63, 63, 70, 0.9) rgba(9, 9, 11, 0.4);
+  }
+
+  .scrollbar-thin-dark::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin-dark::-webkit-scrollbar-track {
+    background: rgba(9, 9, 11, 0.35);
+    border-radius: 9999px;
+  }
+
+  .scrollbar-thin-dark::-webkit-scrollbar-thumb {
+    background: rgba(63, 63, 70, 0.95);
+    border-radius: 9999px;
+    border: 1px solid rgba(9, 9, 11, 0.65);
+  }
+
+  .scrollbar-thin-dark::-webkit-scrollbar-thumb:hover {
+    background: rgba(82, 82, 91, 0.95);
+  }
 }

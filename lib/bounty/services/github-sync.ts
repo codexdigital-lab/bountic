@@ -2,9 +2,9 @@ import "server-only";
 
 import { getSupabaseServiceClient } from "@/lib/clients/supabase/server";
 import { getGithubInstallationClient, getGithubRepoInstallationId } from "@/lib/clients/github/server";
-import { BOUNTY_LABELS } from "@/lib/constants/bounty";
 import { parseIssueId } from "@/lib/bounty/issue-id";
 import { buildLedgerCommentBody } from "@/lib/bounty/ledger";
+import { getSupabaseServerEnv } from "@/lib/env/server";
 
 async function getIssueInstallationClient(owner: string, repo: string, installationId?: number) {
   if (installationId) {
@@ -13,6 +13,23 @@ async function getIssueInstallationClient(owner: string, repo: string, installat
 
   const resolvedInstallationId = await getGithubRepoInstallationId(owner, repo);
   return getGithubInstallationClient(resolvedInstallationId);
+}
+
+async function pinIssueComment(params: {
+  owner: string;
+  repo: string;
+  commentId: number;
+  github: Awaited<ReturnType<typeof getIssueInstallationClient>>;
+}): Promise<void> {
+  try {
+    await params.github.request("PUT /repos/{owner}/{repo}/issues/comments/{comment_id}/pin", {
+      owner: params.owner,
+      repo: params.repo,
+      comment_id: params.commentId,
+    });
+  } catch (pinError) {
+    console.warn("Failed to pin ledger comment:", pinError);
+  }
 }
 
 export async function ensureBountyRow(issueId: string): Promise<void> {
@@ -52,7 +69,7 @@ export async function recomputeBountyTotals(issueId: string): Promise<void> {
 
   const { error: updateError } = await supabase
     .from("bounties")
-    .update({ total_amount: totalAmount, status: "OPEN" })
+    .update({ total_amount: totalAmount })
     .eq("issue_id", issueId);
 
   if (updateError) {
@@ -69,6 +86,11 @@ export async function syncGithubBountyArtifacts(issueId: string): Promise<void> 
 
   const github = await getIssueInstallationClient(parsedIssue.owner, parsedIssue.repo);
   const supabase = getSupabaseServiceClient();
+  const env = getSupabaseServerEnv();
+  const issuePageUrl = new URL(
+    `/bounty/${parsedIssue.owner}/${parsedIssue.repo}/${parsedIssue.issueNumber}`,
+    env.NEXT_PUBLIC_APP_URL,
+  ).toString();
 
   const { data: bounty, error: bountyError } = await supabase
     .from("bounties")
@@ -91,14 +113,7 @@ export async function syncGithubBountyArtifacts(issueId: string): Promise<void> 
     throw new Error(`Failed to load funding events for ledger: ${eventsError.message}`);
   }
 
-  await github.rest.issues.addLabels({
-    owner: parsedIssue.owner,
-    repo: parsedIssue.repo,
-    issue_number: parsedIssue.issueNumber,
-    labels: [BOUNTY_LABELS.active],
-  });
-
-  const ledgerBody = buildLedgerCommentBody(issueId, bounty, fundingEvents ?? []);
+  const ledgerBody = buildLedgerCommentBody(issueId, bounty, fundingEvents ?? [], issuePageUrl);
 
   if (!bounty.ledger_comment_id) {
     const created = await github.rest.issues.createComment({
@@ -106,6 +121,13 @@ export async function syncGithubBountyArtifacts(issueId: string): Promise<void> 
       repo: parsedIssue.repo,
       issue_number: parsedIssue.issueNumber,
       body: ledgerBody,
+    });
+
+    await pinIssueComment({
+      owner: parsedIssue.owner,
+      repo: parsedIssue.repo,
+      commentId: created.data.id,
+      github,
     });
 
     const { error } = await supabase
@@ -130,6 +152,13 @@ export async function syncGithubBountyArtifacts(issueId: string): Promise<void> 
       body: ledgerBody,
     });
 
+    await pinIssueComment({
+      owner: parsedIssue.owner,
+      repo: parsedIssue.repo,
+      commentId: created.data.id,
+      github,
+    });
+
     const { error } = await supabase
       .from("bounties")
       .update({ ledger_comment_id: String(created.data.id) })
@@ -147,6 +176,13 @@ export async function syncGithubBountyArtifacts(issueId: string): Promise<void> 
     repo: parsedIssue.repo,
     comment_id: commentId,
     body: ledgerBody,
+  });
+
+  await pinIssueComment({
+    owner: parsedIssue.owner,
+    repo: parsedIssue.repo,
+    commentId: commentId,
+    github,
   });
 }
 

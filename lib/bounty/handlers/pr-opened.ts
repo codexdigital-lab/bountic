@@ -5,6 +5,7 @@ import { buildIssueId } from "@/lib/bounty/issue-id";
 import { buildBountyActiveBody } from "@/lib/bounty/ledger";
 import { prOpenedPayloadSchema } from "@/lib/bounty/schemas/payloads";
 import { getSupabaseServiceClient } from "@/lib/clients/supabase/server";
+import { extractIssueNumberFromPrBody } from "@/lib/bounty/commands";
 
 async function getIssueInstallationClient(owner: string, repo: string, installationId?: number) {
   if (installationId) {
@@ -20,7 +21,13 @@ export async function handlePrOpened(eventPayload: unknown) {
 
   const owner = payload.repository.owner.login;
   const repo = payload.repository.name;
-  const issueId = buildIssueId(owner, repo, payload.pull_request.number);
+  const linkedIssueNumber = extractIssueNumberFromPrBody(payload.pull_request.body);
+
+  if (!linkedIssueNumber) {
+    return { handled: false, reason: "no-linked-issue-in-pr-body" };
+  }
+
+  const issueId = buildIssueId(owner, repo, linkedIssueNumber);
 
   const supabase = getSupabaseServiceClient();
   const { data: bounty, error: bountyError } = await supabase
@@ -39,8 +46,10 @@ export async function handlePrOpened(eventPayload: unknown) {
 
   const github = await getIssueInstallationClient(owner, repo, payload.installation?.id);
 
+  const linkedIssueId = buildIssueId(owner, repo, linkedIssueNumber);
+
   const body = buildBountyActiveBody(
-    issueId,
+    linkedIssueId,
     payload.pull_request.user.login,
     bounty.total_amount,
     payload.pull_request.html_url,
@@ -53,10 +62,27 @@ export async function handlePrOpened(eventPayload: unknown) {
     body,
   });
 
+  const { error: activityError } = await supabase.from("activity_events").insert({
+    issue_id: issueId,
+    event_type: "PR_COMPETING",
+    actor_username: payload.pull_request.user.login,
+    pr_number: payload.pull_request.number,
+    pr_url: payload.pull_request.html_url ?? null,
+    metadata: {
+      source: "pull_request.opened",
+    },
+  });
+
+  if (activityError) {
+    throw new Error(`Failed to record PR competing activity: ${activityError.message}`);
+  }
+
   return {
     handled: true,
     reason: "bounty-notified",
-    issueId,
+    issueId: linkedIssueId,
+    linkedIssueNumber,
+    prNumber: payload.pull_request.number,
     prAuthor: payload.pull_request.user.login,
     amount: bounty.total_amount,
   };

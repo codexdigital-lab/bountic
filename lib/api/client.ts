@@ -16,21 +16,61 @@ export type BountyDetail = {
   owner: string;
   repo: string;
   issue_number: number;
+  issue_title: string | null;
+  issue_body: string | null;
+  issue_state: string | null;
+  issue_url: string | null;
+  issue_labels: string[];
   status: "OPEN" | "LOCKED" | "PAID";
   total_amount: number;
   ledger_comment_id: string | null;
   payout_tx_hash: string | null;
+  winning_pr_number: number | null;
+  winning_pr_author: string | null;
+  winning_pr_url: string | null;
+  locked_at: string | null;
+  paid_at: string | null;
+  approved_by: string | null;
   created_at: string;
   updated_at: string;
+  leaderboard: LeaderboardEntry[];
+  activity: ActivityEvent[];
   funding_events: FundingEvent[];
+  viewer: ViewerPermission;
 };
 
 export type FundingEvent = {
   id: string;
   funder_username: string;
   amount: number;
+  funding_source: "WEB" | "API";
   payment_status: "PENDING" | "SUCCESS";
   created_at: string;
+};
+
+export type LeaderboardEntry = {
+  funder_username: string;
+  total_amount: number;
+  contribution_count: number;
+};
+
+export type ActivityEvent = {
+  id: string;
+  event_type: "FUNDING_ADDED" | "PR_COMPETING" | "BOUNTY_LOCKED" | "PAYOUT_SENT";
+  actor_username: string | null;
+  amount: number | null;
+  pr_number: number | null;
+  pr_url: string | null;
+  tx_hash: string | null;
+  metadata: unknown;
+  created_at: string;
+};
+
+export type ViewerPermission = {
+  is_authenticated: boolean;
+  github_username: string | null;
+  permission: "admin" | "maintain" | "write" | "triage" | "read" | "none" | null;
+  can_approve_payment: boolean;
 };
 
 export type ExploreResponse = {
@@ -86,6 +126,7 @@ export async function fundBounty(params: {
   amount: number;
   funder_username: string;
   issue_url?: string;
+  funding_source?: "WEB" | "API";
 }): Promise<FundResponse> {
   const res = await fetch(`${API_BASE}/api/bounty/fund`, {
     method: "POST",
@@ -95,5 +136,36 @@ export async function fundBounty(params: {
   if (!res.ok) {
     throw new Error("Failed to create funding");
   }
+  return res.json();
+}
+
+export async function approveBounty(params: {
+  owner: string;
+  repo: string;
+  issueNumber: number;
+}): Promise<{
+  success: boolean;
+  payout: {
+    issueId: string;
+    amount: number;
+    recipient: string;
+    walletAddress: string;
+    txHash: string | null;
+    transactionId: string;
+    approvedBy: string;
+  };
+}> {
+  const res = await fetch(
+    `${API_BASE}/api/bounty/${params.owner}/${params.repo}/${params.issueNumber}/approve`,
+    {
+      method: "POST",
+    },
+  );
+
+  if (!res.ok) {
+    const errorPayload = await res.json().catch(() => null);
+    throw new Error(errorPayload?.message ?? "Failed to approve bounty payout");
+  }
+
   return res.json();
 }

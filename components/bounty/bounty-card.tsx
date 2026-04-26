@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { formatAmount, getStatusColor } from "./utils";
+import { formatAmount, formatDate, getStatusColor } from "./utils";
 
 type Bounty = {
   issue_id: string;
@@ -17,30 +17,43 @@ type Bounty = {
 };
 
 export function BountyCard({ bounty }: { bounty: Bounty }) {
+  const bountyHref = `/bounty/${bounty.owner}/${bounty.repo}/${bounty.issue_number}`;
+  const isUnfunded = bounty.status === "OPEN" && bounty.total_amount === 0;
+
   return (
-    <Link href={`/bounty/${bounty.owner}/${bounty.repo}/${bounty.issue_number}`}>
-      <Card className="group hover:border-green-500/50 transition-all duration-200 cursor-pointer bg-zinc-900/50 border-zinc-800 hover:shadow-lg hover:shadow-green-500/5">
+    <Link href={bountyHref} className="group">
+      <Card className="border-zinc-800/80 bg-linear-to-b from-zinc-900 to-zinc-950 transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-400/50">
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-zinc-400 font-mono">
-              {bounty.owner}/{bounty.repo}
-            </span>
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate font-mono text-sm text-zinc-400">
+              {bounty.owner}/{bounty.repo}/{bounty.issue_number}
+            </p>
             <Badge variant="outline" className={getStatusColor(bounty.status)}>
               {bounty.status}
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="pb-3">
-          <div className="text-2xl font-bold text-green-400 font-mono">
-            ${formatAmount(bounty.total_amount)}
-            <span className="text-sm font-normal text-zinc-500 ml-1">USDC</span>
+        <CardContent>
+          <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Total Bounty</p>
+          {isUnfunded ? (
+            <p className="text-2xl font-semibold text-zinc-100">No funds yet</p>
+          ) : (
+            <div className="font-mono text-2xl font-bold text-emerald-300">
+              ${formatAmount(bounty.total_amount)}
+              <span className="ml-1 text-sm font-normal text-zinc-500">USDC</span>
+            </div>
+          )}
+          <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+            <div className="rounded-md border border-zinc-800 bg-zinc-900/70 px-2.5 py-2">
+              <p className="text-zinc-500">Issue</p>
+              <p className="mt-1 font-mono text-zinc-200">#{bounty.issue_number}</p>
+            </div>
+            <div className="rounded-md border border-zinc-800 bg-zinc-900/70 px-2.5 py-2">
+              <p className="text-zinc-500">Updated</p>
+              <p className="mt-1 text-zinc-200">{formatDate(bounty.updated_at)}</p>
+            </div>
           </div>
         </CardContent>
-        <CardFooter className="pt-0">
-          <div className="text-xs text-zinc-500 font-mono">
-            #{bounty.issue_number}
-          </div>
-        </CardFooter>
       </Card>
     </Link>
   );
