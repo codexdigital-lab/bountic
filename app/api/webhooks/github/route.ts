@@ -1,12 +1,31 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { getGithubAppClient } from "@/lib/clients/github/server";
+import { getSupabaseServiceClient } from "@/lib/clients/supabase/server";
 import {
   handleIssueLabeled,
   handlePrOpened,
   handlePrClosed,
   handleIssueComment,
 } from "@/lib/bounty/handlers";
+
+async function isDeliveryProcessed(deliveryId: string): Promise<boolean> {
+  const supabase = getSupabaseServiceClient();
+  const { data } = await supabase
+    .from("webhook_deliveries")
+    .select("id")
+    .eq("delivery_id", deliveryId)
+    .maybeSingle();
+  return !!data;
+}
+
+async function markDeliveryProcessed(deliveryId: string, source: string): Promise<void> {
+  const supabase = getSupabaseServiceClient();
+  await supabase.from("webhook_deliveries").insert({
+    delivery_id: deliveryId,
+    source,
+  });
+}
 
 export async function POST(request: NextRequest) {
   const app = getGithubAppClient();
@@ -20,6 +39,11 @@ export async function POST(request: NextRequest) {
       { error: "missing-headers" },
       { status: 400 }
     );
+  }
+
+  const alreadyProcessed = await isDeliveryProcessed(delivery);
+  if (alreadyProcessed) {
+    return NextResponse.json({ handled: false, reason: "duplicate-delivery" });
   }
 
   const payload = await request.text();
@@ -41,9 +65,10 @@ export async function POST(request: NextRequest) {
 
   const parsedPayload = JSON.parse(payload);
 
-    if (parsedPayload.sender?.type === "Bot") {
-      return NextResponse.json({ handled: false, reason: "ignored-bot" });
-    }
+  if (parsedPayload.sender?.type === "Bot") {
+    await markDeliveryProcessed(delivery, "github");
+    return NextResponse.json({ handled: false, reason: "ignored-bot" });
+  }
 
   try {
     let result: { handled: boolean; reason: string };
@@ -71,6 +96,8 @@ export async function POST(request: NextRequest) {
     } else {
       return NextResponse.json({ handled: false, reason: "ignored-event" });
     }
+
+    await markDeliveryProcessed(delivery, "github");
 
     return NextResponse.json(result);
   } catch (handlerError) {

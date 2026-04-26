@@ -244,6 +244,30 @@ export type Database = {
           },
         ];
       };
+      webhook_deliveries: {
+        Row: {
+          id: string;
+          delivery_id: string;
+          source: string;
+          processed_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          delivery_id: string;
+          source: string;
+          processed_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          delivery_id?: string;
+          source?: string;
+          processed_at?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

@@ -118,6 +118,17 @@ create index if not exists payout_events_issue_id_idx on public.payout_events(is
 create index if not exists payout_events_recipient_username_idx
   on public.payout_events(recipient_username);
 
+create table if not exists public.webhook_deliveries (
+  id uuid primary key default gen_random_uuid(),
+  delivery_id text not null unique,
+  source text not null,
+  processed_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists webhook_deliveries_delivery_id_idx on public.webhook_deliveries(delivery_id);
+create index if not exists webhook_deliveries_source_idx on public.webhook_deliveries(source);
+
 alter table public.bounties add column if not exists issue_title text;
 alter table public.bounties add column if not exists issue_body text;
 alter table public.bounties add column if not exists issue_state text;

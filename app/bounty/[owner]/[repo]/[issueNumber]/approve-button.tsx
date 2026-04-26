@@ -26,7 +26,7 @@ export function ApproveButton({ owner, repo, issueNumber }: Props) {
     startTransition(async () => {
       try {
         const response = await approveBounty({ owner, repo, issueNumber });
-        const { payoutType, txHash, recipientEmail, recipientWallet } = response.payout;
+        const { payoutType, recipientEmail, recipientWallet } = response.payout;
         
         let message = "";
         if (payoutType === "wallet" && recipientWallet) {

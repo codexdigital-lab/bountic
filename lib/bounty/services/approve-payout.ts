@@ -29,6 +29,10 @@ export async function approveBountyPayout(params: {
     throw new Error("Bounty not found");
   }
 
+  if (bounty.status === "PAID") {
+    throw new Error("Bounty has already been paid");
+  }
+
   if (bounty.status !== "LOCKED") {
     throw new Error("Bounty must be LOCKED before payout approval");
   }

@@ -53,6 +53,17 @@ function extractSessionId(data: Record<string, unknown>): string | null {
   return null;
 }
 
+async function isLocusEventProcessed(sessionId: string): Promise<boolean> {
+  const supabase = getSupabaseServiceClient();
+  const { data: fundingEvent } = await supabase
+    .from("funding_events")
+    .select("id, payment_status")
+    .eq("locus_checkout_id", sessionId)
+    .maybeSingle();
+  
+  return fundingEvent?.payment_status === "SUCCESS";
+}
+
 export async function POST(request: NextRequest) {
   const payload = await request.text();
 
@@ -75,6 +86,14 @@ export async function POST(request: NextRequest) {
   }
 
   const parsedPayload = JSON.parse(payload);
+  const sessionId = extractSessionId(parsedPayload);
+
+  if (sessionId) {
+    const alreadyProcessed = await isLocusEventProcessed(sessionId);
+    if (alreadyProcessed) {
+      return NextResponse.json({ handled: false, reason: "duplicate-event" });
+    }
+  }
 
   try {
     const result = await handleLocusFundingWebhook(parsedPayload);

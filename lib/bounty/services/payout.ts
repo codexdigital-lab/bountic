@@ -54,7 +54,6 @@ export async function callLocusPayoutByEmail(params: {
   memo: string;
 }): Promise<PayoutResult> {
   const locus = getLocusServerClient();
-  const env = getSupabaseServerEnv();
 
   try {
     const payload = await locus.request<{

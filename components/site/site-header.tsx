@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { getSupabaseServerClient } from "@/lib/clients/supabase/server";
 import { Button } from "@/components/ui/button";
