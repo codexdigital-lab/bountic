@@ -152,6 +152,42 @@ export const prCommentPayloadSchema = z.object({
   }),
 });
 
+export const issueCommentPayloadSchema = z.object({
+  action: z.literal("created"),
+  sender: z
+    .object({
+      type: z.string(),
+      login: z.string().min(1),
+    })
+    .optional(),
+  installation: z
+    .object({
+      id: z.number().int().positive(),
+    })
+    .optional(),
+  repository: z.object({
+    name: z.string().min(1),
+    owner: z.object({
+      login: z.string().min(1),
+    }),
+  }),
+  issue: z.object({
+    number: z.number().int().positive(),
+    pull_request: z
+      .object({
+        url: z.string().url().optional(),
+      })
+      .optional(),
+  }),
+  comment: z.object({
+    id: z.number().int().positive(),
+    body: z.string(),
+    user: z.object({
+      login: z.string().min(1),
+    }),
+  }),
+});
+
 export type CheckoutSession = {
   id: string;
   checkoutUrl: string;

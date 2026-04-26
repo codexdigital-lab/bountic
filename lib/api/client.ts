@@ -153,7 +153,9 @@ export async function approveBounty(params: {
     issueId: string;
     amount: number;
     recipient: string;
-    walletAddress: string;
+    payoutType: "wallet" | "email" | "unclaimed";
+    recipientEmail: string | null;
+    recipientWallet: string | null;
     txHash: string | null;
     transactionId: string;
     approvedBy: string;

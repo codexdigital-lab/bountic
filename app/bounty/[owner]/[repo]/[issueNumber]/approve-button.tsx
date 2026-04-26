@@ -21,11 +21,23 @@ export function ApproveButton({ owner, repo, issueNumber }: Props) {
 
   const onApprove = () => {
     setError(null);
+    setSuccessTxHash(null);
 
     startTransition(async () => {
       try {
         const response = await approveBounty({ owner, repo, issueNumber });
-        setSuccessTxHash(response.payout.txHash);
+        const { payoutType, txHash, recipientEmail, recipientWallet } = response.payout;
+        
+        let message = "";
+        if (payoutType === "wallet" && recipientWallet) {
+          message = `Payout sent to wallet ${recipientWallet.slice(0, 6)}...${recipientWallet.slice(-4)}`;
+        } else if (payoutType === "email" && recipientEmail) {
+          message = `Payout sent to ${recipientEmail}`;
+        } else if (payoutType === "unclaimed") {
+          message = "Winner not connected. Notified via issue comment to claim.";
+        }
+        
+        setSuccessTxHash(message);
         router.refresh();
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to approve payout");
@@ -53,7 +65,7 @@ export function ApproveButton({ owner, repo, issueNumber }: Props) {
       </Button>
       {error ? <p className="mt-3 text-sm text-red-300">{error}</p> : null}
       {successTxHash ? (
-        <p className="mt-3 text-sm text-emerald-300">Payout sent. Tx: {successTxHash}</p>
+        <p className="mt-3 text-sm text-emerald-300">{successTxHash}</p>
       ) : null}
     </div>
   );

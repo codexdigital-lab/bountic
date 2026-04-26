@@ -5,6 +5,7 @@ import {
   handleIssueLabeled,
   handlePrOpened,
   handlePrClosed,
+  handleIssueComment,
 } from "@/lib/bounty/handlers";
 
 export async function POST(request: NextRequest) {
@@ -54,7 +55,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ handled: false, reason: "ignored-action" });
       }
     } else if (eventName === "issue_comment") {
-      return NextResponse.json({ handled: false, reason: "issue-comments-disabled" });
+      if (parsedPayload.action === "created") {
+        result = await handleIssueComment(parsedPayload);
+      } else {
+        return NextResponse.json({ handled: false, reason: "ignored-action" });
+      }
     } else if (eventName === "pull_request") {
       if (parsedPayload.action === "opened") {
         result = await handlePrOpened(parsedPayload);

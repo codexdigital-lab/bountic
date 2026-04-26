@@ -1,9 +1,9 @@
 import "server-only";
 
-import { callLocusPayout } from "@/lib/bounty/services/payout";
-import { resolveWalletAddress } from "@/lib/bounty/services/wallet";
+import { resolveAndPayout } from "@/lib/bounty/services/payout";
 import { syncGithubBountyArtifacts } from "@/lib/bounty/services/github-sync";
 import { getSupabaseServiceClient } from "@/lib/clients/supabase/server";
+import { getGithubInstallationClient, getGithubRepoInstallationId } from "@/lib/clients/github/server";
 import { buildIssueId } from "@/lib/bounty/issue-id";
 
 export async function approveBountyPayout(params: {
@@ -17,7 +17,7 @@ export async function approveBountyPayout(params: {
 
   const { data: bounty, error: bountyError } = await supabase
     .from("bounties")
-    .select("issue_id, status, total_amount, winning_pr_author")
+    .select("issue_id, status, total_amount, winning_pr_author, winning_pr_number")
     .eq("issue_id", issueId)
     .maybeSingle();
 
@@ -37,19 +37,30 @@ export async function approveBountyPayout(params: {
     throw new Error("No winning PR author found for payout");
   }
 
-  const walletAddress = await resolveWalletAddress({
-    prDescription: null,
-    prAuthorUsername: bounty.winning_pr_author,
-  });
-
-  if (!walletAddress) {
-    throw new Error("Could not resolve payout wallet for winning PR author");
+  let winningPrBody: string | null = null;
+  if (bounty.winning_pr_number) {
+    try {
+      const installationId = await getGithubRepoInstallationId(params.owner, params.repo);
+      const github = await getGithubInstallationClient(installationId);
+      const prResponse = await github.rest.pulls.get({
+        owner: params.owner,
+        repo: params.repo,
+        pull_number: bounty.winning_pr_number,
+      });
+      winningPrBody = prResponse.data.body ?? null;
+    } catch (err) {
+      console.warn("Failed to fetch PR body for wallet extraction:", err);
+    }
   }
 
-  const payoutResult = await callLocusPayout({
-    toAddress: walletAddress,
+  const payoutResult = await resolveAndPayout({
+    owner: params.owner,
+    repo: params.repo,
+    issueNumber: params.issueNumber,
+    winningPrAuthor: bounty.winning_pr_author,
+    winningPrBody,
     amount: bounty.total_amount,
-    memo: `Bountic payout for ${issueId}`,
+    issueId,
   });
 
   const now = new Date().toISOString();
@@ -78,6 +89,9 @@ export async function approveBountyPayout(params: {
     metadata: {
       approved_by: params.approvedBy,
       payout_source: "web",
+      payout_type: payoutResult.payoutType,
+      recipient_email: payoutResult.recipientEmail,
+      recipient_wallet: payoutResult.recipientWallet,
     },
   });
 
@@ -94,6 +108,7 @@ export async function approveBountyPayout(params: {
     metadata: {
       approved_by: params.approvedBy,
       payout_source: "web",
+      payout_type: payoutResult.payoutType,
     },
   });
 
@@ -107,7 +122,9 @@ export async function approveBountyPayout(params: {
     issueId,
     amount: bounty.total_amount,
     recipient: bounty.winning_pr_author,
-    walletAddress,
+    payoutType: payoutResult.payoutType,
+    recipientEmail: payoutResult.recipientEmail,
+    recipientWallet: payoutResult.recipientWallet,
     txHash: payoutResult.txHash,
     transactionId: payoutResult.transactionId,
     approvedBy: params.approvedBy,
