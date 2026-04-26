@@ -30,6 +30,13 @@ function renderActivityText(event: {
   metadata: unknown;
 }) {
   if (event.event_type === "FUNDING_ADDED") {
+    const displayName =
+      typeof event.metadata === "object" &&
+      event.metadata !== null &&
+      "funder_display_name" in event.metadata &&
+      (event.metadata as { funder_display_name?: string }).funder_display_name
+        ? (event.metadata as { funder_display_name: string }).funder_display_name
+        : null;
     const fundingSource =
       typeof event.metadata === "object" &&
       event.metadata !== null &&
@@ -37,8 +44,9 @@ function renderActivityText(event: {
       (event.metadata as { funding_source?: string }).funding_source
         ? ` via ${(event.metadata as { funding_source: string }).funding_source}`
         : "";
+    const label = displayName ?? (event.actor_username ? `@${event.actor_username}` : "Anonymous");
 
-    return `@${event.actor_username ?? "unknown"} added $${formatAmount(event.amount ?? 0)}${fundingSource}`;
+    return `${label} added $${formatAmount(event.amount ?? 0)}${fundingSource}`;
   }
 
   if (event.event_type === "PR_COMPETING") {
@@ -141,14 +149,17 @@ export default async function BountyDetailPage(props: Props) {
 
                 <div className="mt-5 rounded-xl border border-zinc-800/80 bg-zinc-900/70 p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Funder Leaderboard</p>
-                  <div className="mt-3 space-y-2 text-sm">
-                    {bounty.leaderboard.length === 0 ? (
-                      <p className="text-zinc-500">No confirmed funders yet.</p>
-                    ) : (
-                      bounty.leaderboard.map((entry, idx) => (
-                        <div key={entry.funder_username} className="flex items-center justify-between text-zinc-300">
+                <div className="mt-3 space-y-2 text-sm">
+                  {bounty.leaderboard.length === 0 ? (
+                    <p className="text-zinc-500">No confirmed funders yet.</p>
+                  ) : (
+                    bounty.leaderboard.map((entry, idx) => (
+                        <div
+                          key={`${entry.display_label}-${idx}`}
+                          className="flex items-center justify-between text-zinc-300"
+                        >
                           <span>
-                            #{idx + 1} @{entry.funder_username}
+                            #{idx + 1} {entry.display_label}
                           </span>
                           <span className="font-mono text-emerald-300">${formatAmount(entry.total_amount)}</span>
                         </div>

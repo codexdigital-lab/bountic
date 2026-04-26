@@ -14,7 +14,8 @@ const routeParamsSchema = z.object({
 
 type FundingEventResponse = {
   id: string;
-  funder_username: string;
+  funder_username: string | null;
+  funder_display_name: string | null;
   amount: number;
   funding_source: "WEB" | "API";
   payment_status: "PENDING" | "SUCCESS";
@@ -22,7 +23,9 @@ type FundingEventResponse = {
 };
 
 type LeaderboardEntry = {
-  funder_username: string;
+  funder_username: string | null;
+  funder_display_name: string | null;
+  display_label: string;
   total_amount: number;
   contribution_count: number;
 };
@@ -125,7 +128,7 @@ export async function GET(
 
   const { data: fundingEvents, error: eventsError } = await supabase
     .from("funding_events")
-    .select("id, funder_username, amount, funding_source, payment_status, created_at")
+    .select("id, funder_username, funder_display_name, amount, funding_source, payment_status, created_at")
     .eq("issue_id", issueId)
     .order("created_at", { ascending: true });
 
@@ -151,17 +154,30 @@ export async function GET(
 
   const successfulFundingEvents = (fundingEvents ?? []).filter((event) => event.payment_status === "SUCCESS");
 
-  const leaderboardMap = new Map<string, { total: number; count: number }>();
+  const leaderboardMap = new Map<string, { total: number; count: number; funder_username: string | null; funder_display_name: string | null }>();
   for (const event of successfulFundingEvents) {
-    const existing = leaderboardMap.get(event.funder_username) ?? { total: 0, count: 0 };
+    const key = event.funder_display_name ?? event.funder_username ?? "Anonymous";
+    const existing = leaderboardMap.get(key) ?? {
+      total: 0,
+      count: 0,
+      funder_username: event.funder_username ?? null,
+      funder_display_name: event.funder_display_name ?? null,
+    };
     existing.total += event.amount;
     existing.count += 1;
-    leaderboardMap.set(event.funder_username, existing);
+    leaderboardMap.set(key, existing);
   }
 
-  const leaderboard: LeaderboardEntry[] = [...leaderboardMap.entries()]
-    .map(([funder_username, stats]) => ({
-      funder_username,
+  const leaderboard: LeaderboardEntry[] = [...leaderboardMap.values()]
+    .map((stats) => ({
+      funder_username: stats.funder_username,
+      funder_display_name: stats.funder_display_name,
+      display_label:
+        stats.funder_display_name?.trim()
+          ? stats.funder_display_name
+          : stats.funder_username
+            ? `@${stats.funder_username}`
+            : "Anonymous",
       total_amount: stats.total,
       contribution_count: stats.count,
     }))

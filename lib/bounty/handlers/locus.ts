@@ -42,7 +42,7 @@ export async function handleLocusFundingWebhook(eventPayload: unknown) {
   const supabase = getSupabaseServiceClient();
   const { data: fundingEvent, error: fundingError } = await supabase
     .from("funding_events")
-    .select("id, issue_id, funder_username, amount, funding_source, payment_status")
+    .select("id, issue_id, funder_username, funder_display_name, amount, funding_source, payment_status")
     .eq("locus_checkout_id", sessionId)
     .maybeSingle();
 
@@ -67,13 +67,15 @@ export async function handleLocusFundingWebhook(eventPayload: unknown) {
     const { error: activityError } = await supabase.from("activity_events").insert({
       issue_id: fundingEvent.issue_id,
       event_type: "FUNDING_ADDED",
-      actor_username: fundingEvent.funder_username,
+      actor_username: fundingEvent.funder_username ?? null,
       amount: fundingEvent.amount,
       funding_event_id: fundingEvent.id,
       metadata: {
         source: "locus.webhook",
         event: payload.event,
         funding_source: fundingEvent.funding_source,
+        funder_display_name: fundingEvent.funder_display_name ?? null,
+        funder_username: fundingEvent.funder_username ?? null,
       },
     });
 

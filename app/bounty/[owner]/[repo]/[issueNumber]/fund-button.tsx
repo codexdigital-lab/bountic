@@ -14,6 +14,7 @@ type Props = {
 
 export function FundButton({ issueId, issueUrl }: Props) {
   const [amount, setAmount] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -29,11 +30,10 @@ export function FundButton({ issueId, issueUrl }: Props) {
     setError(null);
 
     try {
-      const funderUsername = prompt("Enter your GitHub username:") || "anonymous";
       const response: FundResponse = await fundBounty({
         issue_id: issueId,
         amount: numAmount,
-        funder_username: funderUsername,
+        funder_display_name: displayName.trim() || undefined,
         issue_url: issueUrl,
         funding_source: "WEB",
       });
@@ -66,28 +66,43 @@ export function FundButton({ issueId, issueUrl }: Props) {
   }
 
   return (
-    <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-6">
-      <h3 className="text-lg font-semibold mb-4">Fund This Bounty</h3>
-      <div className="flex flex-col sm:flex-row gap-4 items-end">
-        <div className="w-full sm:w-40">
-          <Label htmlFor="amount" className="text-zinc-400 mb-2 block">
-            Amount (USDC)
-          </Label>
-          <Input
-            id="amount"
-            type="number"
-            min="1"
-            step="0.01"
-            placeholder="50.00"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="bg-zinc-950 border-zinc-800 text-zinc-100 font-mono"
-          />
+    <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6">
+      <h3 className="mb-4 text-lg font-semibold">Fund This Bounty</h3>
+      <div className="flex flex-col gap-4">
+        <div className="grid gap-3 sm:grid-cols-[1fr_140px]">
+          <div>
+            <Label htmlFor="display-name" className="mb-2 block text-xs uppercase tracking-[0.2em] text-zinc-500">
+              Name (optional)
+            </Label>
+            <Input
+              id="display-name"
+              type="text"
+              placeholder="Jane Doe"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="border-zinc-800 bg-zinc-950 text-zinc-100"
+            />
+          </div>
+          <div>
+            <Label htmlFor="amount" className="mb-2 block text-xs uppercase tracking-[0.2em] text-zinc-500">
+              Amount (USDC)
+            </Label>
+            <Input
+              id="amount"
+              type="number"
+              min="1"
+              step="0.01"
+              placeholder="50.00"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="border-zinc-800 bg-zinc-950 font-mono text-zinc-100"
+            />
+          </div>
         </div>
         <Button
           onClick={handleFund}
           disabled={loading}
-          className="bg-green-500 hover:bg-green-600 text-black font-medium"
+          className="h-11 bg-emerald-400 font-medium text-black hover:bg-emerald-300"
         >
           {loading ? (
             <>
@@ -99,7 +114,7 @@ export function FundButton({ issueId, issueUrl }: Props) {
           )}
         </Button>
       </div>
-      {error && <p className="text-red-400 mt-3 text-sm">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
     </div>
   );
 }

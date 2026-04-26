@@ -30,9 +30,9 @@ end;
 $$;
 
 create table if not exists public.users (
-  github_username text primary key,
+  email text primary key,
+  github_username text not null unique,
   locus_wallet_address text,
-  email text,
   created_at timestamptz not null default now()
 );
 
@@ -61,7 +61,9 @@ create table if not exists public.bounties (
 create table if not exists public.funding_events (
   id uuid primary key default gen_random_uuid(),
   issue_id text not null references public.bounties(issue_id) on delete cascade,
-  funder_username text not null,
+  funder_username text,
+  funder_display_name text,
+  funder_email text,
   amount double precision not null,
   funding_source public.funding_source not null default 'WEB',
   locus_checkout_id text not null,
@@ -128,6 +130,34 @@ alter table public.bounties add column if not exists approved_by text;
 
 alter table public.funding_events
   add column if not exists funding_source public.funding_source not null default 'WEB';
+
+alter table public.users add column if not exists email text;
+alter table public.users add column if not exists github_username text;
+alter table public.users add column if not exists locus_wallet_address text;
+
+alter table public.users alter column email set not null;
+alter table public.users alter column github_username set not null;
+
+do $$
+begin
+  if exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.users'::regclass
+      and contype = 'p'
+      and conname = 'users_pkey'
+  ) then
+    execute 'alter table public.users drop constraint users_pkey';
+  end if;
+end;
+$$;
+
+alter table public.users add primary key (email);
+create unique index if not exists users_github_username_idx on public.users(github_username);
+
+alter table public.funding_events add column if not exists funder_display_name text;
+alter table public.funding_events add column if not exists funder_email text;
+alter table public.funding_events alter column funder_username drop not null;
 
 create or replace function public.set_updated_at_timestamp()
 returns trigger

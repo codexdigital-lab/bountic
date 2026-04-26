@@ -104,7 +104,7 @@ export async function syncGithubBountyArtifacts(issueId: string): Promise<void> 
 
   const { data: fundingEvents, error: eventsError } = await supabase
     .from("funding_events")
-    .select("funder_username, amount, payment_status")
+    .select("funder_username, funder_display_name, amount, payment_status")
     .eq("issue_id", issueId)
     .eq("payment_status", "SUCCESS")
     .order("created_at", { ascending: true });

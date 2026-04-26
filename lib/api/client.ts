@@ -41,7 +41,8 @@ export type BountyDetail = {
 
 export type FundingEvent = {
   id: string;
-  funder_username: string;
+  funder_username: string | null;
+  funder_display_name: string | null;
   amount: number;
   funding_source: "WEB" | "API";
   payment_status: "PENDING" | "SUCCESS";
@@ -49,7 +50,9 @@ export type FundingEvent = {
 };
 
 export type LeaderboardEntry = {
-  funder_username: string;
+  funder_username: string | null;
+  funder_display_name: string | null;
+  display_label: string;
   total_amount: number;
   contribution_count: number;
 };
@@ -124,7 +127,8 @@ export async function fetchBountyDetail(
 export async function fundBounty(params: {
   issue_id: string;
   amount: number;
-  funder_username: string;
+  funder_username?: string;
+  funder_display_name?: string;
   issue_url?: string;
   funding_source?: "WEB" | "API";
 }): Promise<FundResponse> {

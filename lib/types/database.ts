@@ -11,21 +11,21 @@ export type Database = {
     Tables: {
       users: {
         Row: {
+          email: string;
           github_username: string;
           locus_wallet_address: string | null;
-          email: string | null;
           created_at: string;
         };
         Insert: {
+          email: string;
           github_username: string;
           locus_wallet_address?: string | null;
-          email?: string | null;
           created_at?: string;
         };
         Update: {
+          email?: string;
           github_username?: string;
           locus_wallet_address?: string | null;
-          email?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -97,7 +97,9 @@ export type Database = {
         Row: {
           id: string;
           issue_id: string;
-          funder_username: string;
+          funder_username: string | null;
+          funder_display_name: string | null;
+          funder_email: string | null;
           amount: number;
           funding_source: Database["public"]["Enums"]["funding_source"];
           locus_checkout_id: string;
@@ -108,7 +110,9 @@ export type Database = {
         Insert: {
           id?: string;
           issue_id: string;
-          funder_username: string;
+          funder_username?: string | null;
+          funder_display_name?: string | null;
+          funder_email?: string | null;
           amount: number;
           funding_source?: Database["public"]["Enums"]["funding_source"];
           locus_checkout_id: string;
@@ -119,7 +123,9 @@ export type Database = {
         Update: {
           id?: string;
           issue_id?: string;
-          funder_username?: string;
+          funder_username?: string | null;
+          funder_display_name?: string | null;
+          funder_email?: string | null;
           amount?: number;
           funding_source?: Database["public"]["Enums"]["funding_source"];
           locus_checkout_id?: string;

@@ -22,7 +22,7 @@ function getStatusBadge(status: "OPEN" | "LOCKED" | "PAID"): string {
 export function buildLedgerCommentBody(
   issueId: string,
   bounty: Pick<BountyRow, "total_amount" | "status" | "payout_tx_hash">,
-  fundingEvents: Array<Pick<FundingEventRow, "funder_username" | "amount" | "payment_status">>,
+  fundingEvents: Array<Pick<FundingEventRow, "funder_username" | "funder_display_name" | "amount" | "payment_status">>,
   issuePageUrl?: string,
 ): string {
   const successfulEvents = fundingEvents.filter((event) => event.payment_status === "SUCCESS");
@@ -41,7 +41,12 @@ export function buildLedgerCommentBody(
   ];
 
   for (const [index, event] of leaderboard.entries()) {
-    lines.push(`| ${index + 1} | @${event.funder_username} | $${formatAmount(event.amount)} |`);
+    const label = event.funder_display_name?.trim()
+      ? event.funder_display_name
+      : event.funder_username
+        ? `@${event.funder_username}`
+        : "Anonymous";
+    lines.push(`| ${index + 1} | ${label} | $${formatAmount(event.amount)} |`);
   }
 
   if (leaderboard.length === 0) {

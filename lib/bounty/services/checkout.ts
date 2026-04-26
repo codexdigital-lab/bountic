@@ -67,6 +67,7 @@ export async function createCheckoutSession(params: {
   issueId: string;
   amount: number;
   funderUsername: string;
+  funderDisplayName?: string | null;
   sourceCommentId: number;
   issueUrl?: string;
 }): Promise<CheckoutSession> {
@@ -85,6 +86,7 @@ export async function createCheckoutSession(params: {
         source: "bountic",
         issueId: params.issueId,
         funderUsername: params.funderUsername,
+        funderDisplayName: params.funderDisplayName ?? null,
         sourceCommentId: String(params.sourceCommentId),
       },
     },
