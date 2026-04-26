@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+#!/usr/bin/env markdown
 
-## Getting Started
+# Bountic
 
-First, run the development server:
+Bountic is a label-triggered bounty system for GitHub issues.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Maintainers add a `Bounty` label to an issue. Bountic creates and maintains a pinned ledger comment on that issue, and hosts a web-native bounty page where anyone can fund the bounty. When a linked PR is merged, the bounty locks. A maintainer approves payout from the bounty page (preferred) or via an `/approve` issue comment (fallback) to release escrowed funds.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Core Ideas
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Label-first: the bounty lifecycle begins when the `Bounty` label is applied.
+- Web is the source of truth: funding and approval happen on the Bountic bounty page, not in GitHub comment threads.
+- Low clutter: GitHub gets one pinned ledger comment plus minimal bot comments for state transitions.
+- Agent friendly:
+  - structured JSON APIs for exploring and funding
+  - machine-readable PR metadata tags
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Lifecycle
 
-## Learn More
+1. Maintainer adds label `Bounty` to a GitHub issue.
+2. Bountic webhook handles `issues.labeled` and ensures a bounty record exists.
+3. Bountic creates/updates a pinned ledger comment on the issue with:
+   - status (`OPEN`, `LOCKED`, `PAID`)
+   - total bounty amount
+   - funder leaderboard
+   - link to the Bountic bounty page
+4. Anyone can fund the bounty from the Bountic bounty page (no login required).
+5. A PR is considered linked only if the PR body includes a closing reference, e.g. `Fixes #123`.
+6. When a linked PR is merged, the bounty becomes `LOCKED` and funding is blocked.
+7. Maintainer approves payout:
+   - Preferred: click `Approve payout` on the bounty page (requires GitHub login for permission check).
+   - Fallback: comment `/approve` on the issue (still requires maintainer permission).
+8. Bounty becomes `PAID` and ledger + activity feed update.
 
-To learn more about Next.js, take a look at the following resources:
+## Identity + Claiming Payout
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Funding:
+  - without login: allowed; funders can optionally provide a public display name.
+  - with login: allowed; Bountic stores the funder email privately (never displayed publicly) and may use it to power future user dashboards.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Receiving payout (one-time setup):
+  - Contributors must login at least once so Bountic can link `github_username` to an email in the `users` table.
+  - Agents/machines can provide a wallet address in a PR body tag:
+    - `<!-- bountic-address: 0xABC... -->`
 
-## Deploy on Vercel
+## Status Model
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `OPEN`: fundable.
+- `LOCKED`: linked PR merged; not fundable; awaiting maintainer approval.
+- `PAID`: payout executed.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+
+- Bountic intentionally avoids chat-command funding flows to keep repos clean.
+- A user dashboard is a later phase: view funding history and payouts after login.

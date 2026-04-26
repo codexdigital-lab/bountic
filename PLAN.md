@@ -1,199 +1,132 @@
-# Bountic Plan (Label-First, Agent-Friendly)
+#!/usr/bin/env markdown
 
-## Product Direction
+# Bountic Implementation Plan (Current)
 
-Bountic starts on **GitHub issue label** and executes funding + payout through a **web-native issue page**.
+This plan reflects the agreed product flow:
 
-Trigger model:
-- Maintainer adds label `Bounty` on an issue
-- Bot handles `issues.labeled`
-- Bot creates/updates one ledger comment pinned to the issue
-- Ledger includes total bounty, status, and canonical Bountic issue URL
+- Anyone can explore + fund without login.
+- Funding is blocked once a bounty is `LOCKED`.
+- Only maintainers need login to approve payout from the web UI.
+- Fallback maintainer approval via `/approve` comment on the issue.
+- Contributors must login once to link GitHub username to email for payout-by-email.
+- Agents can supply a PR body tag `<!-- bountic-address: 0x... -->` for wallet-native payout paths.
+- Users table primary key is `email`.
 
-Funding model:
-- No `/bounty 20` slash command flow
-- Funding is done directly on Bountic issue page via Locus checkout
-- API funding remains available for agents (`POST /api/bounty/fund`)
+## Phase 1: Data Model + Identity Foundations
 
-Approval model:
-- No `/approve` slash command flow
-- Maintainer approves payout from website
-- GitHub OAuth + permission check gates the `Approve payment` action
+Goal: align schema with the flow and remove assumptions that every actor has a GitHub username.
 
-PR competition rule:
-- A PR is considered competing **only** when PR body contains a closing reference like `Fixes #123`
+1. Update `users` table
+   - Primary key: `email`.
+   - `github_username`: non-null text, unique.
+   - Store user profile metadata (optional): display name, avatar.
+   - Update RLS policies to use `auth.jwt() ->> 'email'` as the identity anchor.
 
----
+2. Update `funding_events` table
+   - Add `funder_display_name` (public, optional).
+   - Add `funder_email` (private, optional; present when authed).
+   - Relax `funder_username` requirements (allow anonymous funding without a GitHub username).
+   - Ensure ledger + UI can render funders without leaking emails.
 
-## Core UX Flow
+3. Document machine tags
+   - `<!-- bountic-address: 0x... -->` in PR body for agent payout.
+   - Keep tags parseable and stable.
 
-1. Maintainer labels issue with `Bounty`
-2. Bountic bot creates/updates ledger comment + deep link
-3. Users open Bountic issue page (`/bounty/[owner]/[repo]/[issueNumber]`)
-4. Users add funds via inline checkout
-5. Activity feed records funding + competing PRs + lock + payout
-6. On merged linked PR, bounty becomes `LOCKED`
-7. Maintainer visits page, sees `Approve payment` button, confirms payout
-8. Bounty becomes `PAID`, tx hash added to feed + ledger
+## Phase 2: Funding UX (No Login Required) + Lock Funding Gate
 
----
+Goal: make funding frictionless and enforce "no funding after solved".
 
-## State Machine
+1. Bounty page funding card
+   - Amount input.
+   - Optional "Name" field (single line, small, non-blocking).
+   - No prompts.
 
-- `OPEN`: label exists and bounty is fundable
-- `LOCKED`: linked competing PR merged; waiting maintainer approval
-- `PAID`: payout executed
+2. `POST /api/bounty/fund`
+   - Reject if bounty status is `LOCKED` or `PAID`.
+   - If viewer is logged in: attach `funder_email` (from Supabase session) and optionally a default name.
+   - Always store `funder_display_name` if provided.
 
-Allowed transitions:
-- `issues.labeled(Bounty)` -> ensure row -> `OPEN`
-- `checkout.session.paid` -> recompute totals (still `OPEN` unless already `LOCKED`/`PAID`)
-- `pull_request.closed(merged + Fixes #issue)` -> `LOCKED`
-- maintainer approve payout -> `PAID`
+3. Ledger + leaderboard
+   - Display priority for funders:
+     1) `funder_display_name`
+     2) `@funder_username`
+     3) `Anonymous`
 
-Guardrails:
-- Ignore new funding if status is `PAID`
-- Preserve `LOCKED` unless explicitly paid/reset
-- All state transitions append `activity_events`
+## Phase 3: Contributor One-Time Login (Payout Eligibility)
 
----
+Goal: allow contributors to claim payouts by linking GitHub username -> email.
 
-## API Contracts (Agent-Friendly)
+1. Add minimal contributor login entry point
+   - A dedicated "Connect GitHub" route or button.
+   - On successful OAuth, upsert into `users` with:
+     - `email` (PK)
+     - `github_username` (non-null)
+     - any optional profile fields.
 
-### Public Read APIs
+2. Ensure we can resolve payout recipient email
+   - From bounty `winning_pr_author` -> lookup in `users`.
+   - If missing:
+     - bounty stays `LOCKED`
+     - UI indicates "Winner must connect GitHub once to receive payout".
 
-- `GET /api/explore`
-  - Returns machine-readable list of bounties
-  - Supports filters: `status`, `min_amount`, sorting, pagination
+## Phase 4: Approval Paths (Web Preferred + `/approve` Fallback)
 
-- `GET /api/bounty/[owner]/[repo]/[issueNumber]`
-  - Returns:
-    - issue context (title/body/labels/state/url)
-    - bounty totals/status
-    - funder leaderboard
-    - normalized activity feed
-    - viewer capability flags (when authenticated): `can_approve_payment`
+Goal: maintainers can release escrow via UI or an issue comment.
 
-### Write APIs
+1. Web approve (preferred)
+   - Keep `POST /api/bounty/[owner]/[repo]/[issueNumber]/approve`.
+   - Requires GitHub OAuth session.
+   - Permission gate: admin/maintain/write.
+   - Verifies bounty is `LOCKED`.
+   - Verifies winner email exists.
+   - Executes payout (email-based) and marks bounty `PAID`.
+   - Inserts `payout_events` and `activity_events`.
+   - Syncs GitHub ledger comment.
 
-- `POST /api/bounty/fund`
-  - Creates Locus checkout session
-  - Source tagged as `WEB` or `API`
-  - Returns checkout session id + checkout url
+2. GitHub comment approve (fallback)
+   - Re-enable `issue_comment.created` handling.
+   - Trigger on exact command `/approve` (optionally allow leading/trailing whitespace).
+   - Verify commenter has admin/maintain/write.
+   - Run the same payout flow as web approve.
 
-- `POST /api/bounty/[owner]/[repo]/[issueNumber]/approve`
-  - Auth required
-  - Verifies user is maintainer/admin on repo
-  - Verifies bounty is `LOCKED`
-  - Executes payout and marks bounty `PAID`
+## Phase 5: Hardening + Ops
 
-### Webhooks
+Goal: reliability and correctness under real webhook behavior.
 
-- `POST /api/webhooks/github`
-  - Handles:
-    - `issues` (`action=labeled`) for `Bounty`
-    - `pull_request` (`opened`, `closed`)
-  - PR link detection uses closing keywords in PR body (`Fixes #123` etc.)
+1. Idempotency
+   - Dedupe GitHub deliveries by `x-github-delivery`.
+   - Dedupe Locus paid events by checkout id.
+   - Ensure repeated webhooks do not double-pay.
 
-- `POST /api/webhooks/locus`
-  - Handles paid checkout events
-  - Marks funding success
-  - Recomputes totals
-  - Syncs ledger comment
+2. Consistency
+   - Ensure ledger sync is resilient to comment deletion / invalid ids.
+   - Ensure state transitions are monotonic:
+     - `OPEN -> LOCKED -> PAID`.
+     - No funding when `LOCKED`/`PAID`.
 
----
+3. Observability
+   - Structured logs for webhook handlers and payout.
+   - Clear error messages surfaced in UI for maintainers.
 
-## Data Model
+## Phase 6 (Last): User Dashboard
 
-Tables:
-- `bounties`
-  - issue metadata mirror (title/body/state/url)
-  - status + totals + ledger id
-  - winning PR + approval/payout metadata
-- `funding_events`
-  - per-checkout rows
-  - `funding_source`: `WEB` | `API`
-  - payment status
-- `activity_events`
-  - append-only timeline for issue page
-  - event types:
-    - `FUNDING_ADDED`
-    - `PR_COMPETING`
-    - `BOUNTY_LOCKED`
-    - `PAYOUT_SENT`
-- `users`
-  - GitHub username, wallet, email mapping
+Goal: give logged-in users a reason to log in beyond payout eligibility.
 
----
+1. Dashboard route (authenticated)
+   - Show:
+     - issues the user funded (by email when authed, plus optional name matching)
+     - bounties they have won (by github_username)
+     - payout statuses and references
+   - No public exposure of email.
 
-## Web Page Requirements
+2. APIs
+   - `GET /api/me` or `GET /api/dashboard` backed by Supabase session.
 
-Route: `/bounty/[owner]/[repo]/[issueNumber]`
+## Open Decisions (Tracked)
 
-Layout:
-- Left: issue context
-  - title + description
-  - repo, labels, open/closed status
-  - GitHub issue link
-- Right: bounty panel
-  - prominent total (`💰 $85 USDC`)
-  - funder leaderboard
-  - `Add Bounty` inline checkout action
-  - status badge (`OPEN` / `LOCKED` / `PAID`)
-  - conditional `Approve payment` button for authorized maintainers
-- Bottom: activity feed
-  - `@alice added $20`
-  - `@bob added $40 via API`
-  - `PR #87 by @carol is competing`
-  - `Bounty paid to @carol — tx 0x...`
+1. Payout mode priority
+   - Default payout is email-based via linked user email.
+   - Agent tag `bountic-address` enables wallet-native payout path.
 
----
-
-## Agent Consumption Guarantees
-
-- Stable `issue_id` format: `owner/repo#number`
-- Consistent enum values for `status` and `event_type`
-- Fully machine-readable timestamps (`ISO 8601`)
-- Leaderboard and activity are deterministic projections from DB records
-- `POST /api/bounty/fund` remains usable for autonomous agents
-
-Suggested agent docs:
-- Add a dedicated agent guide file documenting:
-  - discover bounties via `/api/explore`
-  - inspect details via `/api/bounty/...`
-  - fund via `/api/bounty/fund`
-  - include wallet tag in PR body: `<!-- locus-wallet: 0x... -->`
-
----
-
-## Implementation Phases
-
-### Phase 1 (Current)
-- Update planning docs to new flow
-- DB schema + generated DB types for:
-  - issue context fields on `bounties`
-  - `funding_source`
-  - `activity_events`
-  - lock/approve/payout metadata
-
-### Phase 2
-- GitHub webhook refactor
-  - remove issue-comment funding command path
-  - add `issues.labeled` handler for `Bounty`
-  - enforce competing PR rule from closing keyword references
-
-### Phase 3
-- API upgrades
-  - richer bounty detail payload (leaderboard/activity/issue context)
-  - approve payout endpoint with OAuth + permission checks
-
-### Phase 4
-- Bounty detail page redesign to requested layout
-  - inline checkout
-  - maintainer-only approve action
-  - activity timeline presentation
-
-### Phase 5
-- QA, docs, and hardening
-  - webhook replay/idempotency checks
-  - permission edge cases
-  - transaction/ledger consistency
+2. Future split suggestion (not in scope now)
+   - TODO: use an LLM to suggest a payout split based on diff/commit attribution.
