@@ -11,6 +11,6 @@ export async function GET(request: NextRequest) {
     const { url } = await createGithubOAuthSignInUrl(nextPath);
     return NextResponse.redirect(url);
   } catch {
-    return NextResponse.redirect(new URL(`/dashboard?auth_error=oauth_init_failed`, requestUrl.origin));
+    return NextResponse.redirect(new URL(`/connect?auth_error=oauth_init_failed`, requestUrl.origin));
   }
 }

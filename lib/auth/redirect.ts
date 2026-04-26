@@ -1,10 +1,10 @@
 export function sanitizeRelativeRedirectPath(path: string | null | undefined): string {
   if (!path || !path.startsWith("/")) {
-    return "/dashboard";
+    return "/connect";
   }
 
   if (path.startsWith("//")) {
-    return "/dashboard";
+    return "/connect";
   }
 
   return path;

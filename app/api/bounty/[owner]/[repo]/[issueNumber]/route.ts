@@ -113,6 +113,7 @@ export async function GET(
     .maybeSingle();
 
   if (bountyError) {
+    console.error("Failed to fetch bounty from database", bountyError);
     return NextResponse.json(
       { error: "failed-to-fetch-bounty", message: bountyError.message },
       { status: 500 }
@@ -133,6 +134,7 @@ export async function GET(
     .order("created_at", { ascending: true });
 
   if (eventsError) {
+    console.error("Failed to fetch funding events from database", eventsError);
     return NextResponse.json(
       { error: "failed-to-fetch-funding-events", message: eventsError.message },
       { status: 500 }
@@ -146,6 +148,7 @@ export async function GET(
     .order("created_at", { ascending: true });
 
   if (activityError) {
+    console.error("Failed to fetch activity events from database", activityError);
     return NextResponse.json(
       { error: "failed-to-fetch-activity-events", message: activityError.message },
       { status: 500 }

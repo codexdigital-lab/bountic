@@ -255,7 +255,8 @@ export type Database = {
         | "FUNDING_ADDED"
         | "PR_COMPETING"
         | "BOUNTY_LOCKED"
-        | "PAYOUT_SENT";
+        | "PAYOUT_SENT"
+        | "BOUNTY_CREATED";
       payout_status: "PENDING" | "SUCCESS" | "FAILED";
     };
     CompositeTypes: Record<string, never>;

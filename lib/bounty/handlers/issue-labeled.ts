@@ -52,6 +52,19 @@ export async function handleIssueLabeled(eventPayload: unknown) {
     throw new Error(`Failed to upsert bounty from label event: ${upsertError.message}`);
   }
 
+  const { error: activityError } = await supabase.from("activity_events").insert({
+    issue_id: issueId,
+    event_type: "BOUNTY_CREATED",
+    actor_username: payload.sender.login,
+    metadata: {
+      label: BOUNTY_LABELS.trigger,
+    },
+  });
+
+  if (activityError) {
+    throw new Error(`Failed to record bounty created activity: ${activityError.message}`);
+  }
+
   await syncGithubBountyArtifacts(issueId);
 
   return {

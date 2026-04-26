@@ -1,9 +1,9 @@
 import "server-only";
 
-import { getSupabaseServiceClient } from "@/lib/clients/supabase/server";
+import { getSupabaseServerClient } from "@/lib/clients/supabase/server";
 
 export async function getCurrentUser() {
-  const supabase = getSupabaseServiceClient();
+  const supabase = await getSupabaseServerClient();
   const { data, error } = await supabase.auth.getUser();
 
   if (error) {

@@ -23,7 +23,8 @@ begin
       'FUNDING_ADDED',
       'PR_COMPETING',
       'BOUNTY_LOCKED',
-      'PAYOUT_SENT'
+      'PAYOUT_SENT',
+      'BOUNTY_CREATED'
     );
   end if;
 end;
@@ -158,6 +159,8 @@ create unique index if not exists users_github_username_idx on public.users(gith
 alter table public.funding_events add column if not exists funder_display_name text;
 alter table public.funding_events add column if not exists funder_email text;
 alter table public.funding_events alter column funder_username drop not null;
+
+alter type public.activity_event_type add value if not exists 'BOUNTY_CREATED';
 
 create or replace function public.set_updated_at_timestamp()
 returns trigger

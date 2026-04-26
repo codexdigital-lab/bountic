@@ -29,6 +29,9 @@ export const githubIssueCommentPayloadSchema = z.object({
 
 export const githubIssueLabeledPayloadSchema = z.object({
   action: z.literal("labeled"),
+  sender: z.object({
+    login: z.string().min(1),
+  }),
   installation: z
     .object({
       id: z.number().int().positive(),

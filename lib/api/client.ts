@@ -59,7 +59,7 @@ export type LeaderboardEntry = {
 
 export type ActivityEvent = {
   id: string;
-  event_type: "FUNDING_ADDED" | "PR_COMPETING" | "BOUNTY_LOCKED" | "PAYOUT_SENT";
+  event_type: "FUNDING_ADDED" | "PR_COMPETING" | "BOUNTY_LOCKED" | "PAYOUT_SENT" | "BOUNTY_CREATED";
   actor_username: string | null;
   amount: number | null;
   pr_number: number | null;

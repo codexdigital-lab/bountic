@@ -22,13 +22,24 @@ type Props = {
 };
 
 function renderActivityText(event: {
-  event_type: "FUNDING_ADDED" | "PR_COMPETING" | "BOUNTY_LOCKED" | "PAYOUT_SENT";
+  event_type: "FUNDING_ADDED" | "PR_COMPETING" | "BOUNTY_LOCKED" | "PAYOUT_SENT" | "BOUNTY_CREATED";
   actor_username: string | null;
   amount: number | null;
   pr_number: number | null;
   tx_hash: string | null;
   metadata: unknown;
 }) {
+  if (event.event_type === "BOUNTY_CREATED") {
+    const labelName =
+      typeof event.metadata === "object" &&
+      event.metadata !== null &&
+      "label" in event.metadata &&
+      (event.metadata as { label?: string }).label
+        ? (event.metadata as { label: string }).label
+        : "Bounty";
+    return `@${event.actor_username ?? "unknown"} added ${labelName} label`;
+  }
+
   if (event.event_type === "FUNDING_ADDED") {
     const displayName =
       typeof event.metadata === "object" &&
@@ -71,6 +82,7 @@ export default async function BountyDetailPage(props: Props) {
     const data = await fetchBountyDetail(owner, repo, Number(issueNumber));
     bounty = data.bounty;
   } catch (e) {
+    console.error("Failed to fetch bounty detail", e);
     error = e instanceof Error ? e.message : "Failed to load bounty";
   }
 
@@ -193,6 +205,16 @@ export default async function BountyDetailPage(props: Props) {
                       You are logged in as @{bounty.viewer.github_username ?? "unknown"} but do not have maintainer
                       permissions for this repo.
                     </p>
+                  </div>
+                ) : null}
+
+                {bounty.status === "LOCKED" ? (
+                  <div className="mt-4 rounded-2xl border border-zinc-800/70 bg-zinc-900/60 p-4 text-sm text-zinc-400">
+                    Winner payouts require a one-time GitHub connect at
+                    <a className="ml-1 text-emerald-300 hover:text-emerald-200" href="/connect">
+                      /connect
+                    </a>
+                    .
                   </div>
                 ) : null}
               </CardContent>
