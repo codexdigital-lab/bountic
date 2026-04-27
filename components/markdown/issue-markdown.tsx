@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -7,14 +8,14 @@ import remarkGfm from "remark-gfm";
 const markdownComponents: Components = {
   p: ({ children }) => <p className="mb-3 leading-relaxed text-zinc-300">{children}</p>,
   a: ({ href, children }) => (
-    <a
-      href={href}
+    <Link
+      href={href!}
       target="_blank"
       rel="noopener noreferrer"
       className="text-emerald-300 underline underline-offset-4 hover:text-emerald-200"
     >
       {children}
-    </a>
+    </Link>
   ),
   code: ({ children, className }) => {
     const inline = !className;
@@ -38,7 +39,7 @@ const markdownComponents: Components = {
 
 export function IssueMarkdown({ content }: { content: string }) {
   return (
-    <div className="scrollbar-thin-dark prose prose-invert max-h-[34rem] overflow-y-auto pr-2">
+    <div className="scrollbar-thin-dark prose prose-invert max-h-80 overflow-y-auto pr-2">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
         {content}
       </ReactMarkdown>

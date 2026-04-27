@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { fundBounty, type FundResponse } from "@/lib/api/client";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 
 type Props = {
   issueId: string;
@@ -68,14 +69,14 @@ export function FundButton({ issueId, issueUrl }: Props) {
         <p className="text-zinc-400 mb-4">
           Click below to complete your payment via Locus Checkout
         </p>
-        <a
+        <Link
           href={checkoutUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center h-10 px-6 bg-green-500 hover:bg-green-600 text-black font-medium rounded-md transition-colors"
         >
           Open Locus Checkout
-        </a>
+        </Link>
       </div>
     );
   }

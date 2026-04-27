@@ -23,10 +23,10 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-zinc-900/80 bg-[#06090b]/90 backdrop-blur-xl">
       <div className="mx-auto flex justify-between md:grid md:grid-cols-3 h-16 w-full max-w-6xl px-5 sm:px-8">
         <Link href="/" className="flex items-center gap-2 text-zinc-100">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-400/90">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg">
             <Image src="/logo.png" alt="Bountic" width={28} height={28} className="h-7 w-7 contrast-125" />
           </div>
-          <span className="text-base font-semibold tracking-tight">Bountic</span>
+          <span className="text-base font-semibold tracking-tight">BOUNTIC</span>
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm text-zinc-300 md:flex">

@@ -159,14 +159,14 @@ export default async function BountyDetailPage(props: Props) {
                 No issue description provided.
               </p>
             )}
-            <a
+            <Link
               href={issueUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-5 inline-block text-sm text-emerald-300 underline-offset-4 hover:underline"
             >
               View on GitHub
-            </a>
+            </Link>
           </CardContent>
         </Card>
 
@@ -248,13 +248,12 @@ export default async function BountyDetailPage(props: Props) {
               {bounty.status === "LOCKED" ? (
                 <div className="mt-4 rounded-2xl border border-zinc-800/70 bg-zinc-900/60 p-4 text-sm text-zinc-400">
                   Winner payouts require a one-time GitHub connect at
-                  <a
+                  <Link
                     className="ml-1 text-emerald-300 hover:text-emerald-200"
                     href="/connect"
                   >
                     /connect
-                  </a>
-                  .
+                  </Link>
                 </div>
               ) : null}
             </CardContent>

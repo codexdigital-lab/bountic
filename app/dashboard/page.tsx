@@ -178,30 +178,25 @@ export default function DashboardPage() {
           subValue={`${stats.won_count} bounties`}
           color="bg-yellow-400/20 text-yellow-300"
         />
-        <StatCard
+        {/* who tf wants NET? */}
+        {/* <StatCard
           icon={stats.total_won > stats.total_funded ? ArrowUpRight : ArrowDownRight}
           label="Net"
           value={stats.total_won >= stats.total_funded ? `+$${formatAmount(stats.total_won - stats.total_funded)}` : `-$${formatAmount(stats.total_funded - stats.total_won)}`}
           subValue={stats.total_won >= stats.total_funded ? " earnings" : " spent"}
           color={stats.total_won >= stats.total_funded ? "bg-blue-400/20 text-blue-300" : "bg-red-400/20 text-red-300"}
-        />
+        /> */}
       </div>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-2">
         <div>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-zinc-100">Bounties You Funded</h2>
-            <Link href="/explore" className="text-sm text-emerald-300 hover:text-emerald-200">
-              Browse more
-            </Link>
           </div>
           <div className="mt-4 space-y-3">
             {funded_bounties.length === 0 ? (
-              <div className="rounded-xl border border-zinc-800/60 bg-zinc-900/40 p-8 text-center">
+              <div className="rounded-xl min-h-28 border border-zinc-800/60 bg-zinc-900/40 p-8 text-center">
                 <p className="text-zinc-400">You haven&apos;t funded any bounties yet</p>
-                <Link href="/explore">
-                  <Button className="mt-4">Explore Bounties</Button>
-                </Link>
               </div>
             ) : (
               funded_bounties.slice(0, 5).map((bounty) => (

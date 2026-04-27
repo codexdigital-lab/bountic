@@ -38,31 +38,49 @@ export default async function HomePage() {
     <>
       <section className="relative overflow-hidden px-5 pb-16 pt-12 sm:px-8 sm:pt-16">
         <div className="mx-auto max-w-5xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 text-xs text-zinc-400">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            Label-first funding workflow
+          <div className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/80 px-3 py-1 text-sm text-zinc-400">
+            ⚡️ Powered by Locus Smart Escrow
           </div>
 
-          <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-zinc-100 sm:text-6xl">
-            The bounty issue page GitHub never built
+          <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-zinc-100 sm:text-5xl">
+            Turn GitHub Issues into
+            <br/>
+            Instant <span className="text-emerald-300">USDC</span> Bounties
           </h1>
-          <p className="mx-auto mt-5 max-w-3xl text-base leading-relaxed text-zinc-400 sm:text-lg">
-            Maintainers label an issue with <span className="text-emerald-300">Bounty</span>, contributors fund directly on
-            the Bountic page, and maintainers approve payouts on the web once linked PRs are merged.
+          
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-zinc-400 sm:text-lg">
+            The zero-friction escrow protocol for the open-source economy. Fund issues with USDC and settle payouts the second code is merged. Built for humans and AI agents alike— no invoices, no PayPal, no waiting.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/explore">
-              <Button className="h-11 bg-emerald-400 px-8 text-base text-black hover:bg-emerald-300">Explore Bounties</Button>
+              <Button className="h-11 bg-emerald-400 px-8 text-base font-semibold text-black hover:bg-emerald-300 shadow-[0_0_20px_rgba(52,211,153,0.3)] transition-all hover:shadow-[0_0_30px_rgba(52,211,153,0.5)]">Explore Bounties</Button>
             </Link>
-            <a
-              href="https://github.com/apps"
+            <Link
+              href="https://github.com/skndash96/bountic"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-11 items-center justify-center rounded-lg border border-zinc-700 px-8 text-base text-zinc-200 transition-colors hover:bg-zinc-900"
             >
               Install GitHub App
-            </a>
+            </Link>
+          </div>
+
+          {/* The URL Swap Visualizer */}
+          <div className="mx-auto mt-16 max-w-2xl rounded-xl border border-zinc-800 bg-zinc-950/50 p-4 shadow-2xl">
+            <p className="mb-3 text-sm font-medium text-zinc-400">From Issue to Escrow in One Keystroke:</p>
+            <div className="flex items-center overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900 font-mono text-sm sm:text-base">
+              <div className="flex items-center gap-1 bg-zinc-800 px-3 py-3">
+                <span className="h-3 w-3 rounded-full bg-red-500/80"></span>
+                <span className="h-3 w-3 rounded-full bg-yellow-500/80"></span>
+                <span className="h-3 w-3 rounded-full bg-green-500/80"></span>
+              </div>
+              <div className="flex-1 px-4 py-3 text-zinc-300 overflow-x-auto whitespace-nowrap">
+                <span className="text-zinc-500 line-through decoration-red-500/50">github.com</span>
+                <span className="text-emerald-400 font-bold">bountic.com</span>
+                <span>/owner/repo/issues/42</span>
+              </div>
+            </div>
           </div>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-3">
@@ -102,7 +120,7 @@ export default async function HomePage() {
 
       {featuredBounties.length > 0 ? (
         <section className="border-y border-zinc-900/80 bg-zinc-950/40 px-5 py-16 sm:px-8">
-          <div className="mx-auto max-w-6xl">
+          <div className="mx-auto max-w-5xl">
             <div className="mb-8 flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-semibold text-zinc-100">Featured Bounties</h2>
@@ -138,23 +156,23 @@ export default async function HomePage() {
           <div className="mt-8 grid gap-5 md:grid-cols-3">
             <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/70 p-5">
               <p className="text-xs uppercase tracking-[0.2em] text-emerald-300">Step 1</p>
-              <h3 className="mt-2 text-lg font-semibold text-zinc-100">Maintainer adds Bounty label</h3>
+              <h3 className="mt-2 text-lg font-semibold text-zinc-100">The Escrow Lock</h3>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                The webhook creates and updates a pinned ledger comment with status, total amount, and issue page link.
+                Fund instantly via Locus. Back an issue with USDC. The funds are locked in a smart wallet, and a live ledger is pinned to the GitHub thread.
               </p>
             </div>
             <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/70 p-5">
               <p className="text-xs uppercase tracking-[0.2em] text-emerald-300">Step 2</p>
-              <h3 className="mt-2 text-lg font-semibold text-zinc-100">Fund on the issue page</h3>
+              <h3 className="mt-2 text-lg font-semibold text-zinc-100">Human & Machines</h3>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                Contributors use inline checkout to add USDC. Activity feed and leaderboard update automatically.
+                Machines and humans compete. Our llms.txt API allows autonomous agents to find open bounties, submit PRs, and include their hidden payout wallets.
               </p>
             </div>
             <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/70 p-5">
               <p className="text-xs uppercase tracking-[0.2em] text-emerald-300">Step 3</p>
-              <h3 className="mt-2 text-lg font-semibold text-zinc-100">Approve payout on web</h3>
+              <h3 className="mt-2 text-lg font-semibold text-zinc-100">AI Payout Split</h3>
               <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                Once a PR with <span className="text-zinc-200">Fixes #123</span> is merged, maintainers approve payment in UI.
+                When the PR is merged, our AI analyzes the commits and proposes a fair payout split. Maintainers click 'Approve' to instantly route the USDC.
               </p>
             </div>
           </div>
@@ -166,7 +184,7 @@ export default async function HomePage() {
           <h2 className="text-center text-2xl font-semibold text-zinc-100 sm:text-3xl">Why Bountic?</h2>
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/70 p-6">
-              <h3 className="text-lg font-semibold text-zinc-100">Issue-native funding</h3>
+              <h3 className="text-lg font-semibold text-zinc-100">Zero Timeline Pollution</h3>
               <p className="mt-2 text-sm text-zinc-400">No extra repo noise. Maintainers only add one label and keep working in GitHub.</p>
             </div>
             <div className="rounded-2xl border border-zinc-800/70 bg-zinc-900/70 p-6">

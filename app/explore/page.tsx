@@ -1,6 +1,7 @@
 import { fetchBounties, type Bounty } from "@/lib/api/client";
 import { BountyGrid } from "@/components/bounty/bounty-grid";
 import { FilterBar } from "@/components/bounty/filter-bar";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +52,7 @@ export default async function ExplorePage(props: Props) {
         {pagination.count > 0 ? (
           <div className="mt-8 flex justify-center gap-4">
             {offset > 0 ? (
-              <a
+              <Link
                 href={`/explore?${new URLSearchParams({
                   ...(status && status !== "all" ? { status } : {}),
                   sort,
@@ -60,10 +61,10 @@ export default async function ExplorePage(props: Props) {
                 className="rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-zinc-300 transition-colors hover:bg-zinc-800"
               >
                 Previous
-              </a>
+              </Link>
             ) : null}
             {pagination.count === limit ? (
-              <a
+              <Link
                 href={`/explore?${new URLSearchParams({
                   ...(status && status !== "all" ? { status } : {}),
                   sort,
@@ -72,7 +73,7 @@ export default async function ExplorePage(props: Props) {
                 className="rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-zinc-300 transition-colors hover:bg-zinc-800"
               >
                 Next
-              </a>
+              </Link>
             ) : null}
           </div>
         ) : null}
