@@ -39,7 +39,7 @@ export default function CheckoutButton({
                 setSuccess(true);
                 const issueInfo = parseIssueId(issueId)!;
                 setTimeout(() => {
-                    router.replace(`/bounty/${issueInfo.owner}/${issueInfo.repo}/${issueInfo.issueNumber}`);
+                    router.replace(`/b/${issueInfo.owner}/${issueInfo.repo}/issues/${issueInfo.issueNumber}`);
                 }, 2000);
             }
         } catch (e) {

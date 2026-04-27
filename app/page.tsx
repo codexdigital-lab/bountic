@@ -77,7 +77,7 @@ export default async function HomePage() {
               </div>
               <div className="flex-1 px-4 py-3 text-zinc-300 overflow-x-auto whitespace-nowrap">
                 <span className="text-zinc-500 line-through decoration-red-500/50">github.com</span>
-                <span className="text-emerald-400 font-bold">bountic.com</span>
+                <span className="text-emerald-400 font-bold">bountic.com/b</span>
                 <span>/owner/repo/issues/42</span>
               </div>
             </div>
@@ -132,7 +132,7 @@ export default async function HomePage() {
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {featuredBounties.slice(0, 3).map((bounty) => (
-                <Link key={bounty.issue_id} href={`/bounty/${bounty.owner}/${bounty.repo}/${bounty.issue_number}`}>
+                <Link key={bounty.issue_id} href={`/b/${bounty.owner}/${bounty.repo}/issues/${bounty.issue_number}`}>
                   <div className="rounded-2xl border border-zinc-800/80 bg-linear-to-b from-zinc-900 to-zinc-950 p-5 transition-colors hover:border-emerald-400/50">
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-xs text-zinc-500">{bounty.owner}/{bounty.repo}</span>

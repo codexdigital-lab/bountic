@@ -64,18 +64,19 @@ export function FundButton({ issueId, issueUrl }: Props) {
 
   if (checkoutUrl) {
     return (
-      <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">Ready to Fund</h3>
-        <p className="text-zinc-400 mb-4">
-          Click below to complete your payment via Locus Checkout
+      <div className="relative overflow-hidden rounded-xl border border-emerald-400/40 p-6">
+        <h3 className="mb-2 text-lg font-semibold text-emerald-300">Ready to Fund ✨</h3>
+        <p className="mb-5 text-sm text-zinc-300">
+          You’re one click away from completing your bounty funding via Locus Checkout.
         </p>
+
         <Link
           href={checkoutUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center h-10 px-6 bg-green-500 hover:bg-green-600 text-black font-medium rounded-md transition-colors"
+          className="group relative inline-flex h-12 items-center justify-center overflow-hidden rounded-md bg-linear-to-r from-emerald-300 via-green-400 to-emerald-500 px-7 font-semibold text-black transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(52,211,153,0.6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
         >
-          Open Locus Checkout
+          <span className="relative">Open Locus Checkout</span>
         </Link>
       </div>
     );

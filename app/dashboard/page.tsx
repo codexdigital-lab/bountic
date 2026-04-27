@@ -75,7 +75,7 @@ function BountyRow({
   };
   type: "funded" | "won";
 }) {
-  const href = `/bounty/${bounty.owner}/${bounty.repo}/${bounty.issue_number}`;
+  const href = `/b/${bounty.owner}/${bounty.repo}/issues/${bounty.issue_number}`;
 
   return (
     <Link href={href}>

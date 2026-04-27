@@ -88,7 +88,7 @@ export async function syncGithubBountyArtifacts(issueId: string): Promise<void> 
   const supabase = getSupabaseServiceClient();
   const env = getSupabaseServerEnv();
   const issuePageUrl = new URL(
-    `/bounty/${parsedIssue.owner}/${parsedIssue.repo}/${parsedIssue.issueNumber}`,
+    `/b/${parsedIssue.owner}/${parsedIssue.repo}/issues/${parsedIssue.issueNumber}`,
     env.NEXT_PUBLIC_APP_URL,
   ).toString();
 

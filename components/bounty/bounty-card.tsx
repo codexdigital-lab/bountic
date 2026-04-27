@@ -17,7 +17,7 @@ type Bounty = {
 };
 
 export function BountyCard({ bounty }: { bounty: Bounty }) {
-  const bountyHref = `/bounty/${bounty.owner}/${bounty.repo}/${bounty.issue_number}`;
+  const bountyHref = `/b/${bounty.owner}/${bounty.repo}/issues/${bounty.issue_number}`;
   const isUnfunded = bounty.status === "OPEN" && bounty.total_amount === 0;
 
   return (

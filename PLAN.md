@@ -74,7 +74,7 @@ Goal: allow contributors to claim payouts by linking GitHub username -> email.
 Goal: maintainers can release escrow via UI or an issue comment.
 
 1. Web approve (preferred)
-   - Keep `POST /api/bounty/[owner]/[repo]/[issueNumber]/approve`.
+   - Keep `POST /api/bounty/[owner]/[repo]/issues/[issueNumber]/approve`.
    - Requires GitHub OAuth session.
    - Permission gate: admin/maintain/write.
    - Verifies bounty is `LOCKED`.

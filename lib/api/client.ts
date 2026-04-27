@@ -117,7 +117,7 @@ export async function fetchBountyDetail(
   repo: string,
   issueNumber: number
 ): Promise<{ bounty: BountyDetail }> {
-  const res = await fetch(`${API_BASE}/api/bounty/${owner}/${repo}/${issueNumber}`);
+  const res = await fetch(`${API_BASE}/api/bounty/${owner}/${repo}/issues/${issueNumber}`);
   if (!res.ok) {
     throw new Error("Failed to fetch bounty");
   }
@@ -162,7 +162,7 @@ export async function approveBounty(params: {
   };
 }> {
   const res = await fetch(
-    `${API_BASE}/api/bounty/${params.owner}/${params.repo}/${params.issueNumber}/approve`,
+    `${API_BASE}/api/bounty/${params.owner}/${params.repo}/issues/${params.issueNumber}/approve`,
     {
       method: "POST",
     },
