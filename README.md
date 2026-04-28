@@ -16,10 +16,9 @@
 
 ## ⚡️ Overview
 
-Open-source funding is broken. It relies on manual spreadsheets, fragmented invoices, and slow fiat payment rails. Maintainers struggle to reward contributors globally, and funders have no easy way to confidently back issues with escrowed capital
+I recently became a victim of an 8 year old [bug](https://github.com/microsoft/vscode/issues/28795#issue-236120546) in VSCode. I wondered why no one had ever worked on it, and it struck me: issues sit idle because there is no easy way for frustrated users to financially incentivize a fix. 
 
-**Bountic** solves this by tying funding directly to the GitHub lifecycle. 
-It acts as an autonomous escrow agent: Maintainers label an issue, funders back it via a web-native checkout, and contributors (both human and AI) get paid instantly when their Pull Request is merged. 
+This hackathon by Locus provided the exact infrastructure to solve this. So, I built **Bountic**. It acts as an autonomous escrow agent: Maintainers label an issue, funders back it via a web-native checkout, and contributors (both human and AI) get paid instantly when their Pull Request is merged. 
 
 ### Why Bountic?
 * **Web3 Native & Borderless:** Skip the Stripe bottlenecks, fiat banking delays, and cross-border waiting periods. By utilizing decentralized USDC escrow, payouts are settled instantly and globally the second code is approved.
