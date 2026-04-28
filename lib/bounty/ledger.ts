@@ -1,4 +1,5 @@
 import type { Database } from "@/lib/types/database";
+import { parseIssueId } from "./issue-id";
 
 type FundingEventRow = Database["public"]["Tables"]["funding_events"]["Row"];
 type BountyRow = Database["public"]["Tables"]["bounties"]["Row"];
@@ -72,23 +73,17 @@ export function buildBountyActiveBody(
   amount: number,
   prUrl?: string,
 ): string {
+  const bountyInfo = parseIssueId(issueId)!;
+  const bountyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/b/${bountyInfo.owner}/${bountyInfo.repo}/issues/${bountyInfo.issueNumber}`;
+
   const lines = [
     "⚡️ **Bounty Competition Started**",
     "",
-    `@${prAuthor} opened a pull request that references this bounty.`,
-    "",
-    `**Bounty:** ${formatAmount(amount)} USDC`,
+    `@${prAuthor} has submitted a PR that references an issue with a bounty. Learn more about this bounty: ${bountyUrl}`,
     "",
   ];
 
-  if (prUrl) {
-    lines.push(`**PR:** [View Pull Request](${prUrl})`);
-    lines.push("");
-  }
-
   lines.push(
-    `Linked Issue: \`${issueId}\``,
-    "",
     "When this PR is merged, the bounty will be locked and ready for payout approval.",
     "",
     "---",
@@ -103,14 +98,15 @@ export function buildLockedCommentBody(
   amount: number,
   winnerUsername: string,
 ): string {
+  const bountyInfo = parseIssueId(issueId)!;
+  const bountyUrl = `${process.env.NEXT_PUBLIC_APP_URL}/b/${bountyInfo.owner}/${bountyInfo.repo}/issues/${bountyInfo.issueNumber}`;
+
   const lines = [
     "🔒 **Bounty Locked**",
     "",
     `@${winnerUsername} your PR was merged. Great work!`,
     "",
-    `**Amount:** ${formatAmount(amount)} USDC`,
-    "",
-    "The bounty is now ready for payout. Please wait for the maintainers to release the bounty.",
+    `The bounty is now ready for payout. Please wait for the maintainers to release the bounty. [Bounty Page](${bountyUrl})`,
     "",
     "---",
     "_Bountic: Autonomous USDC bounties for open source_",

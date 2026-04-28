@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FundButton } from "./fund-button";
 import { ApproveButton } from "./approve-button";
 import { GithubLoginButton } from "./github-login-button";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +83,23 @@ function renderActivityText(event: {
   return `Bounty paid to @${event.actor_username ?? "unknown"} - tx ${event.tx_hash ?? "pending"}`;
 }
 
+function getActivityBadgeClass(eventType: string) {
+  switch (eventType) {
+    case "FUNDING_ADDED":
+      return "border-emerald-500/40 bg-emerald-500/10 text-emerald-200";
+    case "PR_COMPETING":
+      return "border-sky-500/40 bg-sky-500/10 text-sky-200";
+    case "BOUNTY_LOCKED":
+      return "border-amber-500/40 bg-amber-500/10 text-amber-200";
+    case "PAYOUT_SENT":
+      return "border-violet-500/40 bg-violet-500/10 text-violet-200";
+    case "BOUNTY_CREATED":
+      return "border-pink-500/40 bg-pink-500/10 text-pink-200";
+    default:
+      return "border-zinc-700 bg-zinc-900/80 text-zinc-300";
+  }
+}
+
 export default async function BountyDetailPage(props: Props) {
   const params = await props.params;
   const { owner, repo, issueNumber } = params;
@@ -90,7 +108,8 @@ export default async function BountyDetailPage(props: Props) {
   let error = null;
 
   try {
-    const data = await fetchBountyDetail(owner, repo, Number(issueNumber));
+    const cookieStore = await cookies()
+    const data = await fetchBountyDetail(owner, repo, Number(issueNumber), cookieStore.getAll());
     bounty = data.bounty;
   } catch (e) {
     console.error("Failed to fetch bounty detail", e);
@@ -113,7 +132,7 @@ export default async function BountyDetailPage(props: Props) {
   const issueUrl =
     bounty.issue_url ??
     `https://github.com/${owner}/${repo}/issues/${issueNumber}`;
-  const nextPath = `/bounty/${owner}/${repo}/${issueNumber}`;
+  const nextPath = `/b/${owner}/${repo}/issues/${issueNumber}`;
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
@@ -244,18 +263,6 @@ export default async function BountyDetailPage(props: Props) {
                   </p>
                 </div>
               ) : null}
-
-              {bounty.status === "LOCKED" ? (
-                <div className="mt-4 rounded-2xl border border-zinc-800/70 bg-zinc-900/60 p-4 text-sm text-zinc-400">
-                  Winner payouts require a one-time GitHub connect at
-                  <Link
-                    className="ml-1 text-emerald-300 hover:text-emerald-200"
-                    href="/connect"
-                  >
-                    /connect
-                  </Link>
-                </div>
-              ) : null}
             </CardContent>
           </Card>
         </div>
@@ -297,7 +304,10 @@ export default async function BountyDetailPage(props: Props) {
                           {renderActivityText(event)}
                         </p>
                         <p className="mt-1.5 text-xs font-medium text-zinc-500">
-                          <Badge variant="outline" className="mr-2 border-zinc-700 bg-zinc-900/80 text-zinc-300">
+                          <Badge
+                            variant="outline"
+                            className={`mr-2 ${getActivityBadgeClass(event.event_type)}`}
+                          >
                             {event.event_type.replace(/_/g, " ")}
                           </Badge>
                           {formatDateTime(event.created_at)}
