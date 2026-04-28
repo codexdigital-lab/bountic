@@ -16,7 +16,7 @@
 
 ## ⚡️ Overview
 
-Open-source funding is broken. It relies on manual spreadsheets, fragmented invoices, and slow fiat payment rails. Maintainers struggle to reward contributors globally, and funders have no easy way to confidently back issues with escrowed capital. 
+Open-source funding is broken. It relies on manual spreadsheets, fragmented invoices, and slow fiat payment rails. Maintainers struggle to reward contributors globally, and funders have no easy way to confidently back issues with escrowed capital
 
 **Bountic** solves this by tying funding directly to the GitHub lifecycle. 
 It acts as an autonomous escrow agent: Maintainers label an issue, funders back it via a web-native checkout, and contributors (both human and AI) get paid instantly when their Pull Request is merged. 
