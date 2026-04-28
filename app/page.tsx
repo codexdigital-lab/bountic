@@ -104,16 +104,13 @@ export default async function HomePage() {
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-2xl font-bold text-zinc-100">See How It Works</h2>
           <p className="mt-2 text-sm text-zinc-500">Watch a quick demo of funding an issue and receiving payout</p>
-          <div className="mx-auto mt-6 flex aspect-video w-full max-w-3xl items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/60">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800">
-                <svg className="h-8 w-8 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p className="text-sm text-zinc-500">Loom video placeholder</p>
-            </div>
+          <div className="mx-auto mt-6 aspect-video w-full max-w-3xl overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60">
+            <iframe
+              src="https://www.loom.com/embed/00ee305c550441699f6db0ff97cbc77f"
+              className="h-full w-full"
+              frameBorder="0"
+              allowFullScreen
+            />
           </div>
         </div>
       </section>
