@@ -1,4 +1,4 @@
-const ISSUE_REFERENCE_REGEX = /(?:fixes|closes|resolves)\s+#(\d+)/i;
+const ISSUE_REFERENCE_REGEX = /(?:fix|fixes|closes?|resolves?)\s+#(\d+)/i;
 
 export function extractIssueNumberFromPrBody(body: string | null): number | null {
   if (!body) {

@@ -91,7 +91,7 @@ export async function handlePrClosed(eventPayload: unknown) {
   await github.rest.issues.createComment({
     owner,
     repo,
-    issue_number: linkedIssueNumber,
+    issue_number: payload.pull_request.number,
     body,
   });
 

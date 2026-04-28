@@ -59,12 +59,13 @@ export async function callLocusPayoutByEmail(params: {
     const payload = await locus.request<{
       transaction_id: string;
       tx_hash?: string;
-    }>("/pay/send", {
+    }>("/pay/send-email", {
       method: "POST",
       body: {
-        to_email: params.toEmail,
-        amount: params.amount.toFixed(2),
+        email: params.toEmail,
+        amount: params.amount,
         memo: params.memo,
+        expires_in_days: 30
       },
     });
 

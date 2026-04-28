@@ -99,6 +99,7 @@ export async function POST(request: NextRequest) {
 
     await markDeliveryProcessed(delivery, "github");
 
+    console.log(`Handled GitHub webhook event: ${eventName}, action: ${parsedPayload.action}, result:`, result);
     return NextResponse.json(result);
   } catch (handlerError) {
     console.error("Error handling GitHub webhook:", handlerError);

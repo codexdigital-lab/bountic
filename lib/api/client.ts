@@ -1,3 +1,5 @@
+import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
+
 const API_BASE = process.env.NEXT_PUBLIC_APP_URL || "";
 
 export type Bounty = {
@@ -115,9 +117,14 @@ export async function fetchBounties(params: {
 export async function fetchBountyDetail(
   owner: string,
   repo: string,
-  issueNumber: number
+  issueNumber: number,
+  cookies: RequestCookie[] = []
 ): Promise<{ bounty: BountyDetail }> {
-  const res = await fetch(`${API_BASE}/api/bounty/${owner}/${repo}/issues/${issueNumber}`);
+  const res = await fetch(`${API_BASE}/api/bounty/${owner}/${repo}/issues/${issueNumber}`, {
+    headers: {
+      Cookie: cookies.map(cookie => `${cookie.name}=${cookie.value}`).join("; "),
+    },
+  });
   if (!res.ok) {
     throw new Error("Failed to fetch bounty");
   }
