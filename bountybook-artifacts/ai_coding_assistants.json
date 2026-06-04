@@ -1,0 +1,138 @@
+[
+  {
+    "name": "GitHub Copilot",
+    "vendor": "GitHub / Microsoft",
+    "pricing": {
+      "free_tier": true,
+      "paid_monthly_usd": 10,
+      "enterprise_available": true
+    },
+    "context_window_tokens": 128000,
+    "underlying_models": ["GPT-4.1", "Claude Sonnet", "Gemini"],
+    "ide_support": ["Visual Studio Code", "Visual Studio", "JetBrains IDEs", "Neovim", "GitHub.com"],
+    "autocomplete": true,
+    "chat": true,
+    "inline_edit": true,
+    "codebase_indexing": true,
+    "source": "https://github.com/features/copilot"
+  },
+  {
+    "name": "Cursor",
+    "vendor": "Anysphere",
+    "pricing": {
+      "free_tier": true,
+      "paid_monthly_usd": 20,
+      "enterprise_available": true
+    },
+    "context_window_tokens": 200000,
+    "underlying_models": ["GPT-4.1", "Claude Sonnet", "Gemini"],
+    "ide_support": ["Cursor desktop editor"],
+    "autocomplete": true,
+    "chat": true,
+    "inline_edit": true,
+    "codebase_indexing": true,
+    "source": "https://cursor.com/pricing"
+  },
+  {
+    "name": "Windsurf",
+    "vendor": "Cognition",
+    "pricing": {
+      "free_tier": true,
+      "paid_monthly_usd": 15,
+      "enterprise_available": true
+    },
+    "context_window_tokens": 200000,
+    "underlying_models": ["SWE-1", "Claude Sonnet", "GPT-4.1", "Gemini"],
+    "ide_support": ["Windsurf Editor", "JetBrains IDEs"],
+    "autocomplete": true,
+    "chat": true,
+    "inline_edit": true,
+    "codebase_indexing": true,
+    "source": "https://windsurf.com/pricing"
+  },
+  {
+    "name": "Tabnine",
+    "vendor": "Tabnine",
+    "pricing": {
+      "free_tier": true,
+      "paid_monthly_usd": 9,
+      "enterprise_available": true
+    },
+    "context_window_tokens": 32768,
+    "underlying_models": ["Tabnine proprietary models", "customer-selected private models"],
+    "ide_support": ["Visual Studio Code", "JetBrains IDEs", "Visual Studio", "Eclipse"],
+    "autocomplete": true,
+    "chat": true,
+    "inline_edit": true,
+    "codebase_indexing": true,
+    "source": "https://www.tabnine.com/pricing"
+  },
+  {
+    "name": "Amazon Q Developer",
+    "vendor": "Amazon Web Services",
+    "pricing": {
+      "free_tier": true,
+      "paid_monthly_usd": 19,
+      "enterprise_available": true
+    },
+    "context_window_tokens": 200000,
+    "underlying_models": ["Amazon Q foundation models"],
+    "ide_support": ["Visual Studio Code", "JetBrains IDEs", "Visual Studio", "AWS Console"],
+    "autocomplete": true,
+    "chat": true,
+    "inline_edit": true,
+    "codebase_indexing": true,
+    "source": "https://aws.amazon.com/q/developer/pricing/"
+  },
+  {
+    "name": "Sourcegraph Cody",
+    "vendor": "Sourcegraph",
+    "pricing": {
+      "free_tier": true,
+      "paid_monthly_usd": 19,
+      "enterprise_available": true
+    },
+    "context_window_tokens": 45000,
+    "underlying_models": ["Claude", "OpenAI models", "Gemini"],
+    "ide_support": ["Visual Studio Code", "JetBrains IDEs", "Neovim", "Sourcegraph web"],
+    "autocomplete": true,
+    "chat": true,
+    "inline_edit": true,
+    "codebase_indexing": true,
+    "source": "https://sourcegraph.com/pricing"
+  },
+  {
+    "name": "Aider",
+    "vendor": "Aider open-source project",
+    "pricing": {
+      "free_tier": true,
+      "paid_monthly_usd": null,
+      "enterprise_available": false
+    },
+    "context_window_tokens": 200000,
+    "underlying_models": ["OpenAI models", "Anthropic Claude", "Google Gemini", "local OpenAI-compatible models"],
+    "ide_support": ["Terminal", "Git repositories", "editor-independent workflow"],
+    "autocomplete": false,
+    "chat": true,
+    "inline_edit": true,
+    "codebase_indexing": true,
+    "source": "https://aider.chat/"
+  },
+  {
+    "name": "Continue",
+    "vendor": "Continue.dev",
+    "pricing": {
+      "free_tier": true,
+      "paid_monthly_usd": null,
+      "enterprise_available": true
+    },
+    "context_window_tokens": 200000,
+    "underlying_models": ["OpenAI models", "Anthropic Claude", "Google Gemini", "Mistral", "local OpenAI-compatible models"],
+    "ide_support": ["Visual Studio Code", "JetBrains IDEs"],
+    "autocomplete": true,
+    "chat": true,
+    "inline_edit": true,
+    "codebase_indexing": true,
+    "source": "https://www.continue.dev/"
+  }
+]
